@@ -1,0 +1,131 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  superadmin
+  user
+  supervisi
+}
+
+enum CpTipe {
+  pic
+  wag
+}
+
+enum TicketStatus {
+  proses
+  selesai
+}
+
+enum StatusSupervisi {
+  belum
+  approved
+}
+
+model User {
+  id                 String              @id @default(cuid())
+  username           String              @unique
+  nama               String
+  role               Role                @default(user)
+  passwordHash       String              @map("password_hash")
+  fotoProfilUrl      String?             @map("foto_profil_url")
+  ttdUrl             String?             @map("ttd_url")
+  isAktif            Boolean             @default(true) @map("is_aktif")
+  createdAt          DateTime            @default(now()) @map("created_at")
+  ticketsOwned       Ticket[]            @relation("TicketOwner")
+  activities         TicketActivity[]
+  serverLogs         ServerAccessLog[]   @relation("LogPencatat")
+  serverLogsApproved ServerAccessLog[]   @relation("LogApprover")
+
+  @@map("users")
+}
+
+model ServerAccessLog {
+  id             String    @id @default(cuid())
+  namaOrang      String    @map("nama_orang")
+  instansi       String    @default("") @map("instansi")
+  namaPic        String    @default("") @map("nama_pic")
+  keperluan      String?
+  jenisAkses     String    @default("masuk") @map("jenis_akses") // Tetap ada agar kompatibel
+  waktuAkses     DateTime  @default(now()) @map("waktu_akses")
+  waktuKeluar    DateTime? @map("waktu_keluar")
+  fotoUrl        String?   @map("foto_url")
+  ttdUrl         String?   @map("ttd_url")
+  catatanOleh    String    @map("catatan_oleh")
+  statusApproval String    @default("pending") @map("status_approval") // "pending" | "approved" | "rejected"
+  approvedBy     String?   @map("approved_by")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  pencatat       User      @relation("LogPencatat", fields: [catatanOleh], references: [id])
+  approver       User?     @relation("LogApprover", fields: [approvedBy], references: [id])
+
+  @@map("server_access_logs")
+}
+
+model WorkstationMaster {
+  id           String   @id @default(cuid())
+  namaCabang   String   @unique @map("nama_cabang")
+  kodeKantor   String?  @unique @map("kode_kantor")
+  lokasiKantor String?  @map("lokasi_kantor")
+  tickets      Ticket[]
+
+  @@map("workstation_master")
+}
+
+model Ticket {
+  id                   String          @id @default(cuid())
+  noTiket              String          @unique @map("no_tiket") // Format: WS-YYYY-NNNNN
+  kategori             String          @default("workstation")
+  waktuOpen            DateTime        @default(now()) @map("waktu_open")
+  waktuSelesai         DateTime?       @map("waktu_selesai")
+  cpTipe               CpTipe          @map("cp_tipe")
+  cpNama               String          @map("cp_nama")
+  cpTelp               String?         @map("cp_telp")
+  jenisGangguan        String          @default("Kerusakan Perangkat") @map("jenis_gangguan")
+  sumberPenyebab       String          @default("Workstation") @map("sumber_penyebab")
+  metodePenanganan     String          @default("Penanganan Teknisi") @map("metode_penanganan")
+  wsCabang             String          @map("ws_cabang") // Disimpan redundan berupa nama cabang untuk kestabilan report
+  wsTanggalMasuk       DateTime        @map("ws_tanggal_masuk")
+  wsNoSurat            String?         @map("ws_no_surat")
+  wsMerekKomputer      String?         @map("ws_merek_komputer")
+  wsCapem              String?         @map("ws_capem")
+  wsKelengkapan        String?         @map("ws_kelengkapan")
+  wsSnKomputer         String?         @map("ws_sn_komputer")
+  wsKerusakan          String          @map("ws_kerusakan")
+  wsTglKeVendor        DateTime?       @map("ws_tgl_ke_vendor")
+  wsVendor             String?         @map("ws_vendor")
+  wsTglSelesaiVendor   DateTime?       @map("ws_tgl_selesai_vendor")
+  wsTglKembaliKeCabang DateTime?       @map("ws_tgl_kembali_ke_cabang")
+  wsPicTerima          String?         @map("ws_pic_terima")
+  status               TicketStatus    @default(proses)
+  statusSupervisi      StatusSupervisi @default(belum) @map("status_supervisi")
+  ownerUserId          String          @map("owner_user_id")
+  keterangan           String?
+  createdAt            DateTime        @default(now()) @map("created_at")
+
+  owner       User               @relation("TicketOwner", fields: [ownerUserId], references: [id])
+  activities  TicketActivity[]
+  workstation WorkstationMaster? @relation(fields: [wsCabang], references: [namaCabang]) // Relasi opsional jika nama cabang sama
+
+  @@map("tickets")
+}
+
+model TicketActivity {
+  id        String   @id @default(cuid())
+  ticketId  String   @map("ticket_id")
+  userId    String   @map("user_id")
+  waktu     DateTime @default(now())
+  teks      String
+  createdAt DateTime @default(now()) @map("created_at")
+
+  ticket Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@map("ticket_activities")
+}
