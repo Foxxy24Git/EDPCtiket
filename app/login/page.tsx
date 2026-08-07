@@ -76,10 +76,10 @@ export default function LoginPage() {
           <div className="bg-primary px-8 pt-8 pb-6 text-center">
             <AppLogo logoUrl={logoUrl} className="w-40 h-12 mx-auto mb-3" priority />
             <h1 className="text-white text-lg font-display font-bold">
-              fq-Report
+              Maintenance Hardware
             </h1>
             <p className="text-primary-200 text-xs mt-0.5">
-              Monitoring &amp; Tiket Gangguan ATM &amp; Jaringan
+              Monitoring Tiket Maintenance Hardware
             </p>
           </div>
 
