@@ -41,35 +41,41 @@ export function DayTicketList({ dateKey, tickets }: Props) {
           Tidak ada tiket berjalan pada tanggal ini.
         </p>
       ) : (
-        <ul className="space-y-2 max-h-72 overflow-y-auto scrollbar-thin pr-1">
-          {tickets.map((t, i) => (
-            <motion.li
-              key={t.id}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.2, delay: i * 0.03 }}
-            >
-              <button
-                onClick={() => router.push(`/daily-monitoring`)}
-                className="w-full text-left rounded-lg border border-gray-100 bg-surface-muted hover:bg-surface-subtle px-3 py-2 transition-colors"
+        <ul className="space-y-2 max-h-[440px] overflow-y-auto scrollbar-thin pr-1">
+          {tickets.map((t, i) => {
+            const merekDisplay = (t.wsMerekKomputer || "").startsWith("[EDC]")
+              ? "[EDC] Mesin EDC"
+              : t.wsMerekKomputer ?? "Workstation";
+
+            return (
+              <motion.li
+                key={t.id}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: i * 0.03 }}
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono text-sm font-semibold text-primary">
-                    {t.noTiket}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {fmtTime(t.waktuOpen)}
-                  </span>
-                </div>
-                <div className="mt-0.5 text-xs text-gray-600 truncate">
-                  <span className="font-medium">{t.wsCabang}</span> · {t.wsMerekKomputer ?? "Workstation"}
-                </div>
-                <div className="mt-1 text-[10px] text-gray-400">
-                  Petugas: {t.ownerNama}
-                </div>
-              </button>
-            </motion.li>
-          ))}
+                <button
+                  onClick={() => router.push(`/daily-monitoring`)}
+                  className="w-full text-left rounded-lg border border-gray-100 bg-surface-muted hover:bg-surface-subtle px-3 py-2 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-sm font-semibold text-primary">
+                      {t.noTiket}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {fmtTime(t.waktuOpen)}
+                    </span>
+                  </div>
+                  <div className="mt-0.5 text-xs text-gray-600 truncate">
+                    <span className="font-medium">{t.wsCabang}</span> · {merekDisplay}
+                  </div>
+                  <div className="mt-1 text-[10px] text-gray-400">
+                    Petugas: {t.ownerNama}
+                  </div>
+                </button>
+              </motion.li>
+            );
+          })}
         </ul>
       )}
     </div>

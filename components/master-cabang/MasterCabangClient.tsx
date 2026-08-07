@@ -61,7 +61,6 @@ export function MasterCabangClient({ initialBranches }: Props) {
 
   // Input state untuk Tambah Merek / Vendor
   const [newMerekKomputer, setNewMerekKomputer] = useState("");
-  const [newMerekEdc, setNewMerekEdc] = useState("");
   const [newVendor, setNewVendor] = useState("");
 
   useEffect(() => {
@@ -239,25 +238,6 @@ export function MasterCabangClient({ initialBranches }: Props) {
     saveMasterOptions(updated);
   };
 
-  const addMerekEdc = () => {
-    if (!newMerekEdc.trim()) return;
-    if (masterOptions.merekEdc.includes(newMerekEdc.trim())) return;
-    const updated = {
-      ...masterOptions,
-      merekEdc: [...masterOptions.merekEdc, newMerekEdc.trim()],
-    };
-    setNewMerekEdc("");
-    saveMasterOptions(updated);
-  };
-
-  const removeMerekEdc = (index: number) => {
-    const updated = {
-      ...masterOptions,
-      merekEdc: masterOptions.merekEdc.filter((_, i) => i !== index),
-    };
-    saveMasterOptions(updated);
-  };
-
   const addVendor = () => {
     if (!newVendor.trim()) return;
     if (masterOptions.vendorList.includes(newVendor.trim())) return;
@@ -381,87 +361,45 @@ export function MasterCabangClient({ initialBranches }: Props) {
         </div>
       )}
 
-      {/* ── TAB 2: MASTER MEREK (KOMPUTER & EDC) ── */}
+      {/* ── TAB 2: MASTER MEREK KOMPUTER ── */}
       {activeTab === "merek" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Merek Komputer */}
-          <Card padding="lg" className="space-y-4">
-            <div>
-              <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
-                <Monitor className="w-5 h-5 text-primary" /> Daftar Options Merek Komputer
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Super Admin dapat menambah, mengubah, atau menghapus daftar pilihan merek komputer yang tampil di Form Input Tiket.
-              </p>
-            </div>
+        <Card padding="lg" className="space-y-4 max-w-2xl mx-auto">
+          <div>
+            <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
+              <Monitor className="w-5 h-5 text-primary" /> Daftar Options Merek Komputer
+            </h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Super Admin dapat menambah, mengubah, atau menghapus daftar pilihan merek komputer yang tampil di Form Input Tiket.
+            </p>
+          </div>
 
-            <div className="flex gap-2">
-              <Input
-                placeholder="Tambah Merek Komputer Baru..."
-                value={newMerekKomputer}
-                onChange={(e) => setNewMerekKomputer(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addMerekKomputer()}
-              />
-              <Button onClick={addMerekKomputer} disabled={savingOptions}>
-                <Plus className="w-4 h-4" /> Tambah
-              </Button>
-            </div>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Tambah Merek Komputer Baru..."
+              value={newMerekKomputer}
+              onChange={(e) => setNewMerekKomputer(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addMerekKomputer()}
+            />
+            <Button onClick={addMerekKomputer} disabled={savingOptions}>
+              <Plus className="w-4 h-4" /> Tambah
+            </Button>
+          </div>
 
-            <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-[350px] overflow-y-auto">
-              {masterOptions.merekKomputer.map((merek, idx) => (
-                <div key={merek + idx} className="flex items-center justify-between p-3 hover:bg-gray-50">
-                  <span className="text-sm font-semibold text-gray-800">{merek}</span>
-                  <button
-                    onClick={() => removeMerekKomputer(idx)}
-                    className="text-gray-400 hover:text-red-600 p-1 transition-colors"
-                    title="Hapus opsi merek"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
-
-          {/* Merek EDC */}
-          <Card padding="lg" className="space-y-4">
-            <div>
-              <h3 className="font-bold text-base text-gray-900 flex items-center gap-2">
-                <Monitor className="w-5 h-5 text-indigo-600" /> Daftar Options Merek Mesin EDC
-              </h3>
-              <p className="text-xs text-gray-500 mt-1">
-                Super Admin dapat mengelola daftar merk mesin EDC yang muncul di formulir input tiket.
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <Input
-                placeholder="Tambah Merek EDC Baru..."
-                value={newMerekEdc}
-                onChange={(e) => setNewMerekEdc(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && addMerekEdc()}
-              />
-              <Button onClick={addMerekEdc} disabled={savingOptions} className="bg-indigo-600 hover:bg-indigo-700">
-                <Plus className="w-4 h-4" /> Tambah
-              </Button>
-            </div>
-
-            <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-[350px] overflow-y-auto">
-              {masterOptions.merekEdc.map((merek, idx) => (
-                <div key={merek + idx} className="flex items-center justify-between p-3 hover:bg-gray-50">
-                  <span className="text-sm font-semibold text-gray-800">{merek}</span>
-                  <button
-                    onClick={() => removeMerekEdc(idx)}
-                    className="text-gray-400 hover:text-red-600 p-1 transition-colors"
-                    title="Hapus opsi EDC"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          </Card>
-        </div>
+          <div className="border border-gray-200 rounded-lg divide-y divide-gray-100 max-h-[350px] overflow-y-auto">
+            {masterOptions.merekKomputer.map((merek, idx) => (
+              <div key={merek + idx} className="flex items-center justify-between p-3 hover:bg-gray-50">
+                <span className="text-sm font-semibold text-gray-800">{merek}</span>
+                <button
+                  onClick={() => removeMerekKomputer(idx)}
+                  className="text-gray-400 hover:text-red-600 p-1 transition-colors"
+                  title="Hapus opsi merek"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </Card>
       )}
 
       {/* ── TAB 3: MASTER VENDOR PERBAIKAN ── */}

@@ -27,6 +27,7 @@ interface DeviceItem {
   id: string;
   namaPerangkat: string;
   sn: string;
+  merekKomputer?: string;
 }
 
 async function downloadFile(
@@ -165,16 +166,16 @@ function RekapLaporanContent({ today }: Props) {
   }, [ticketIdParam]);
 
   function setFormAndDeviceFromTicket(t: TicketOption, resetList = false) {
-    const isEdc = t.wsMerekKomputer.toLowerCase().includes("edc");
-    const namaPerangkat = t.wsMerekKomputer.replace(/^\[.*?\]\s*/, "") || (isEdc ? "Mesin EDC" : "Komputer All in One");
+    const isEdc = (t.wsMerekKomputer || "").toLowerCase().includes("edc");
+    const namaPerangkat = isEdc ? "Mesin EDC" : (t.wsMerekKomputer.replace(/^\[.*?\]\s*/, "") || "Komputer All in One");
     const sn = t.wsSnKomputer || "-";
 
     if (resetList) {
-      setDeviceList([{ id: t.id, namaPerangkat, sn }]);
+      setDeviceList([{ id: t.id, namaPerangkat, sn, merekKomputer: t.wsMerekKomputer }]);
     } else {
       setDeviceList((prev) => {
         if (prev.some((d) => d.id === t.id)) return prev;
-        return [...prev, { id: t.id, namaPerangkat, sn }];
+        return [...prev, { id: t.id, namaPerangkat, sn, merekKomputer: t.wsMerekKomputer }];
       });
     }
 
@@ -210,13 +211,49 @@ function RekapLaporanContent({ today }: Props) {
     if (!addDeviceId) return;
     const found = tickets.find((t) => t.id === addDeviceId);
     if (found) {
-      const isEdc = found.wsMerekKomputer.toLowerCase().includes("edc");
-      const namaPerangkat = found.wsMerekKomputer.replace(/^\[.*?\]\s*/, "") || (isEdc ? "Mesin EDC" : "Komputer All in One");
+      const isEdc = (found.wsMerekKomputer || "").toLowerCase().includes("edc");
+      const namaPerangkat = isEdc ? "Mesin EDC" : (found.wsMerekKomputer.replace(/^\[.*?\]\s*/, "") || "Komputer All in One");
       const sn = found.wsSnKomputer || "-";
-      setDeviceList((prev) => [...prev, { id: found.id, namaPerangkat, sn }]);
+      setDeviceList((prev) => [...prev, { id: found.id, namaPerangkat, sn, merekKomputer: found.wsMerekKomputer }]);
       setAddDeviceId("");
     }
   }
+
+  function buildSummaryText(): string {
+    if (!deviceList || deviceList.length === 0) return "0 unit perangkat";
+
+    const counts: Record<string, number> = {};
+
+    for (const d of deviceList) {
+      const foundTicket = tickets.find((t) => t.id === d.id);
+      const raw = d.merekKomputer || foundTicket?.wsMerekKomputer || d.namaPerangkat || "";
+
+      let cat = "Komputer";
+      if (/edc/i.test(raw)) {
+        cat = "Mesin EDC";
+      } else if (/desktop/i.test(raw)) {
+        cat = "Komputer - Desktop";
+      } else if (/mini pc/i.test(raw)) {
+        cat = "Komputer - Mini PC";
+      } else if (/laptop/i.test(raw)) {
+        cat = "Komputer - Laptop";
+      } else if (/all in one|all-in-one|aio/i.test(raw)) {
+        cat = "Komputer All in One";
+      } else {
+        cat = "Komputer";
+      }
+
+      counts[cat] = (counts[cat] || 0) + 1;
+    }
+
+    const parts = Object.entries(counts).map(([cat, count]) => `${count} unit perangkat ${cat}`);
+
+    if (parts.length === 1) return parts[0];
+    if (parts.length === 2) return `${parts[0]} dan ${parts[1]}`;
+    return `${parts.slice(0, -1).join(", ")}, dan ${parts[parts.length - 1]}`;
+  }
+
+  const summaryDevicesText = buildSummaryText();
 
   function handleRemoveDevice(index: number) {
     setDeviceList((prev) => prev.filter((_, i) => i !== index));
@@ -542,7 +579,7 @@ function RekapLaporanContent({ today }: Props) {
 
                   {/* PARAGRAF PENYERAHAN */}
                   <p className="mb-4 text-justify leading-relaxed">
-                    Pada hari ini <strong>{dateFormatted.hari}</strong> Tanggal <strong>{dateFormatted.tglFull}</strong> telah di lakukan penyerahan <strong>{deviceList.length} unit perangkat {tipeHeaderLabel}</strong> milik <strong>{baForm.cabang.startsWith('Cabang') ? baForm.cabang : `Cabang ${baForm.cabang}`}</strong> dengan detail sebagai berikut:
+                    Pada hari ini <strong>{dateFormatted.hari}</strong> Tanggal <strong>{dateFormatted.tglFull}</strong> telah di lakukan penyerahan <strong>{summaryDevicesText}</strong> milik <strong>{baForm.cabang.startsWith('Cabang') ? baForm.cabang : `Cabang ${baForm.cabang}`}</strong> dengan detail sebagai berikut:
                   </p>
 
                   {/* TABEL RINCIAN MULTI-DEVICE */}
@@ -579,7 +616,7 @@ function RekapLaporanContent({ today }: Props) {
                   </table>
 
                   {/* PARAGRAF PENUTUP */}
-                  <p className="my-5 text-justify">
+                  <p className="mt-6 mb-5 text-justify">
                     Demikianlah tanda terima ini dibuat rangkap 2 (dua) untuk dapat digunakan sebagaimana mestinya.
                   </p>
 
@@ -589,13 +626,13 @@ function RekapLaporanContent({ today }: Props) {
                   </div>
 
                   {/* BOX TANDA TANGAN 2 KOLOM */}
-                  <div className="grid grid-cols-2 border border-black min-h-[140px] text-xs">
+                  <div className="grid grid-cols-2 border border-black h-[160px] text-xs">
                     <div className="border-r border-black p-3 flex flex-col justify-between">
                       <div>
                         <div>Diserahkan oleh:</div>
                         <div className="text-[11px] text-gray-700">{baForm.jabatanDiserahkan}</div>
                       </div>
-                      <div className="pt-10">
+                      <div>
                         <div className="font-bold underline uppercase">{baForm.diserahkanOleh}</div>
                         <div className="text-[11px] text-gray-600">Staff</div>
                       </div>
@@ -605,7 +642,7 @@ function RekapLaporanContent({ today }: Props) {
                         <div>Diterima oleh:</div>
                         <div className="text-[11px] text-gray-700">{baForm.diterimaOleh}</div>
                       </div>
-                      <div className="pt-10">
+                      <div>
                         <div className="font-bold underline uppercase">{baForm.diterimaPic || "........................"}</div>
                         <div className="text-[11px] text-gray-600">Penerima Cabang</div>
                       </div>

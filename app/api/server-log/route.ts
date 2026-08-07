@@ -131,11 +131,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Nama instansi wajib diisi." }, { status: 400 });
     }
 
-    const dbUser = await prisma.user.findFirst({
-      where: {
-        OR: [{ id: session.sub }, { username: session.username }],
-      },
-    });
+    const userOr = [];
+    if (session.sub) userOr.push({ id: session.sub });
+    if (session.username) userOr.push({ username: session.username });
+
+    const dbUser = userOr.length > 0
+      ? await prisma.user.findFirst({ where: { OR: userOr } })
+      : null;
 
     if (!dbUser || !dbUser.isAktif) {
       return NextResponse.json(
@@ -179,8 +181,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ log }, { status: 201 });
   } catch (err) {
     console.error("[POST /api/server-log]", err);
+    const errMessage = err instanceof Error ? err.message : "Terjadi kesalahan pada server saat membuat log.";
     return NextResponse.json(
-      { error: "Terjadi kesalahan pada server saat membuat log." },
+      { error: errMessage },
       { status: 500 }
     );
   }

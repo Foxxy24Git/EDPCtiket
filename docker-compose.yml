@@ -42,6 +42,8 @@ services:
       - "3050:3000"
     volumes:
       - ./public:/app/public
+      - ./backup_db:/app/backup_db
+      - ./data:/app/data
 
 volumes:
   fq_postgres_data:

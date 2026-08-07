@@ -1,0 +1,27 @@
+{
+  "merekKomputer": [
+    "Lenovo",
+    "HP",
+    "Dell",
+    "Acer",
+    "Asus",
+    "Apple",
+    "Fujitsu"
+  ],
+  "merekEdc": [
+    "Ingenico",
+    "Verifone",
+    "Pax",
+    "Sunmi",
+    "MoreFun",
+    "Castle"
+  ],
+  "vendorList": [
+    "PT Infomedia",
+    "Vendor Lenovo",
+    "PT Multipolar",
+    "Vendor HP",
+    "PT Visionet",
+    "pt pt"
+  ]
+}

@@ -39,6 +39,7 @@ const DAFTAR_CABANG = [
   "PEKANBARU",
   "BANDUNG",
   "SYARIAH PADANG",
+  "SYARIAH SOLOK",
   "SYARIAH PAYAKUMBUH",
   "SYARIAH BUKITTINGGI",
   "SYARIAH BATUSANGKAR",
@@ -134,7 +135,7 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
   function getFormattedMerek(): string {
     const brand = merekPilihan === "Lainnya (Ketik Manual)" ? merekCustom.trim() : merekPilihan.trim();
     if (jenisPerangkat === "edc") {
-      return brand ? `[EDC] ${brand}` : "[EDC]";
+      return "[EDC]";
     }
     const tipeLabel =
       tipeKomputer === "aio"
@@ -371,34 +372,36 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
               placeholder="cth: SR/00/XX/XXX/00-2026"
             />
 
-            {/* Merek Select (Komputer atau EDC) */}
-            <div className="flex flex-col gap-1">
-              <Select
-                label={jenisPerangkat === "komputer" ? "Merek Komputer" : "Merek Mesin EDC (opsional)"}
-                required={jenisPerangkat === "komputer"}
-                value={merekPilihan}
-                onChange={(e) => setMerekPilihan(e.target.value)}
-              >
-                <option value="">— Pilih Merek —</option>
-                {(jenisPerangkat === "komputer" ? merekKomputerList : merekEdcList).map((merek) => (
-                  <option key={merek} value={merek}>
-                    {merek}
-                  </option>
-                ))}
-              </Select>
+            {/* Merek Select (Hanya untuk Komputer) */}
+            {jenisPerangkat === "komputer" && (
+              <div className="flex flex-col gap-1">
+                <Select
+                  label="Merek Komputer"
+                  required
+                  value={merekPilihan}
+                  onChange={(e) => setMerekPilihan(e.target.value)}
+                >
+                  <option value="">— Pilih Merek —</option>
+                  {merekKomputerList.map((merek) => (
+                    <option key={merek} value={merek}>
+                      {merek}
+                    </option>
+                  ))}
+                </Select>
 
-              {merekPilihan === "Lainnya (Ketik Manual)" && (
-                <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-1">
-                  <Input
-                    label=""
-                    required
-                    placeholder="Tuliskan nama merek perangkat..."
-                    value={merekCustom}
-                    onChange={(e) => setMerekCustom(e.target.value)}
-                  />
-                </motion.div>
-              )}
-            </div>
+                {merekPilihan === "Lainnya (Ketik Manual)" && (
+                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-1">
+                    <Input
+                      label=""
+                      required
+                      placeholder="Tuliskan nama merek perangkat..."
+                      value={merekCustom}
+                      onChange={(e) => setMerekCustom(e.target.value)}
+                    />
+                  </motion.div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

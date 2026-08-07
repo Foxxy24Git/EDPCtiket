@@ -50,6 +50,7 @@ export async function GET(req: Request) {
 
     const reportRows: LogServerReportRow[] = logs.map((item, idx) => ({
       no: idx + 1,
+      fotoUrl: item.fotoUrl,
       namaOrang: item.namaOrang,
       instansi: item.instansi || "-",
       namaPic: item.namaPic || "-",

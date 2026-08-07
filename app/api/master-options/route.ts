@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/session";
+import { prisma } from "@/lib/prisma";
 import fs from "fs";
 import path from "path";
 
@@ -11,19 +12,71 @@ const DEFAULT_OPTIONS = {
   vendorList: ["PT Infomedia", "Vendor Lenovo", "PT Multipolar", "Vendor HP", "PT Visionet"],
 };
 
-function readOptions() {
+/** Membaca master options dari DB (dengan fallback ke JSON/Defaults) */
+async function getMasterOptionsFromDb() {
   try {
-    if (fs.existsSync(DATA_FILE)) {
-      const content = fs.readFileSync(DATA_FILE, "utf-8");
-      return JSON.parse(content);
+    const rows = await prisma.masterOption.findMany();
+    const map: Record<string, string[]> = {};
+    for (const r of rows) {
+      try {
+        map[r.key] = JSON.parse(r.value);
+      } catch {
+        map[r.key] = [];
+      }
     }
+
+    const merekKomputer =
+      Array.isArray(map.merekKomputer) && map.merekKomputer.length > 0
+        ? map.merekKomputer
+        : DEFAULT_OPTIONS.merekKomputer;
+    const merekEdc =
+      Array.isArray(map.merekEdc) && map.merekEdc.length > 0
+        ? map.merekEdc
+        : DEFAULT_OPTIONS.merekEdc;
+    const vendorList =
+      Array.isArray(map.vendorList) && map.vendorList.length > 0
+        ? map.vendorList
+        : DEFAULT_OPTIONS.vendorList;
+
+    return { merekKomputer, merekEdc, vendorList };
   } catch (e) {
-    console.error("Gagal membaca master_options.json:", e);
+    console.error("Gagal membaca master_options dari database, fallback ke JSON:", e);
+    // Fallback file
+    try {
+      if (fs.existsSync(DATA_FILE)) {
+        const content = fs.readFileSync(DATA_FILE, "utf-8");
+        return JSON.parse(content);
+      }
+    } catch {}
+    return DEFAULT_OPTIONS;
   }
-  return DEFAULT_OPTIONS;
 }
 
-function writeOptions(data: typeof DEFAULT_OPTIONS) {
+/** Menyimpan master options ke DB & File JSON */
+async function saveMasterOptionsToDb(data: typeof DEFAULT_OPTIONS) {
+  try {
+    await Promise.all([
+      prisma.masterOption.upsert({
+        where: { key: "merekKomputer" },
+        update: { value: JSON.stringify(data.merekKomputer) },
+        create: { key: "merekKomputer", value: JSON.stringify(data.merekKomputer) },
+      }),
+      prisma.masterOption.upsert({
+        where: { key: "merekEdc" },
+        update: { value: JSON.stringify(data.merekEdc) },
+        create: { key: "merekEdc", value: JSON.stringify(data.merekEdc) },
+      }),
+      prisma.masterOption.upsert({
+        where: { key: "vendorList" },
+        update: { value: JSON.stringify(data.vendorList) },
+        create: { key: "vendorList", value: JSON.stringify(data.vendorList) },
+      }),
+    ]);
+  } catch (e) {
+    console.error("Gagal menyimpan master_options ke DB:", e);
+  }
+
+  // Juga simpan ke file JSON sebagai cadangan
   try {
     const dir = path.dirname(DATA_FILE);
     if (!fs.existsSync(dir)) {
@@ -35,9 +88,9 @@ function writeOptions(data: typeof DEFAULT_OPTIONS) {
   }
 }
 
-/** GET /api/master-options — mengambil opsi master list (Merek & Vendor) */
+/** GET /api/master-options — mengambil opsi master list (Merek & Vendor) dari database */
 export async function GET() {
-  const options = readOptions();
+  const options = await getMasterOptionsFromDb();
   return NextResponse.json(options);
 }
 
@@ -56,14 +109,14 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Payload tidak valid." }, { status: 400 });
   }
 
-  const current = readOptions();
+  const current = await getMasterOptionsFromDb();
 
   const merekKomputer = Array.isArray(body.merekKomputer) ? body.merekKomputer : current.merekKomputer;
   const merekEdc = Array.isArray(body.merekEdc) ? body.merekEdc : current.merekEdc;
   const vendorList = Array.isArray(body.vendorList) ? body.vendorList : current.vendorList;
 
   const updated = { merekKomputer, merekEdc, vendorList };
-  writeOptions(updated);
+  await saveMasterOptionsToDb(updated);
 
   return NextResponse.json({ ok: true, options: updated });
 }

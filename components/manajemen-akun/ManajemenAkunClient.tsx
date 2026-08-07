@@ -275,12 +275,15 @@ export function ManajemenAkunClient({
                   </Td>
                   <Td>
                     {u.fotoProfilUrl ? (
-                      <span className="relative inline-block w-8 h-8 rounded-full overflow-hidden bg-gray-100">
-                        <Image
-                          src={u.fotoProfilUrl}
+                      <span className="relative inline-flex items-center justify-center w-8 h-8 rounded-full overflow-hidden bg-gray-100 border border-gray-200">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={u.fotoProfilUrl.startsWith("/uploads/") ? `/api/uploads/${u.fotoProfilUrl.replace("/uploads/", "")}` : u.fotoProfilUrl}
                           alt={u.nama}
-                          fill
-                          className="object-cover"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).style.display = "none";
+                          }}
                         />
                       </span>
                     ) : (

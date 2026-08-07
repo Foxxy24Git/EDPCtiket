@@ -63,6 +63,7 @@ export function TicketDetailClient({
   // State Penyerahan ke Vendor Modal
   const [vendorModalOpen, setVendorModalOpen] = useState(false);
   const [vendorNameInput, setVendorNameInput] = useState(ticket.wsVendor || "");
+  const [vendorPicInput, setVendorPicInput] = useState("");
   const [vendorSaving, setVendorSaving] = useState(false);
   const [vendorErr, setVendorErr] = useState("");
   const [vendorOptions, setVendorOptions] = useState<string[]>(["PT Infomedia", "Vendor Lenovo", "PT Multipolar", "Vendor HP", "PT Visionet"]);
@@ -149,13 +150,17 @@ export function TicketDetailClient({
     if (!vendorNameInput.trim()) return setVendorErr("Nama Vendor wajib diisi.");
     setVendorSaving(true);
     try {
+      const vendorFullText = vendorPicInput.trim()
+        ? `${vendorNameInput.trim()} (PIC: ${vendorPicInput.trim()})`
+        : vendorNameInput.trim();
+
       const res = await fetch(`/api/tickets/${ticket.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          wsVendor: vendorNameInput.trim(),
+          wsVendor: vendorFullText,
           wsTglKeVendor: new Date().toISOString(),
-          activityText: `Penyerahan ke Vendor ${vendorNameInput.trim()}`,
+          activityText: `Penyerahan ke Vendor ${vendorFullText}`,
         }),
       });
       const data = await res.json();
@@ -602,6 +607,13 @@ export function TicketDetailClient({
               placeholder="cth: PT Infomedia / Vendor Lenovo"
               value={vendorNameInput}
               onChange={(e) => setVendorNameInput(e.target.value)}
+            />
+
+            <Input
+              label="Nama PIC Vendor (opsional)"
+              placeholder="cth: Budi (Teknisi Infomedia)"
+              value={vendorPicInput}
+              onChange={(e) => setVendorPicInput(e.target.value)}
             />
           </div>
           {vendorErr && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{vendorErr}</p>}

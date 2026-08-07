@@ -100,9 +100,12 @@ export function Topbar({ user }: { user: SessionUser }) {
               {user.fotoProfilUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
-                  src={user.fotoProfilUrl}
+                  src={user.fotoProfilUrl.startsWith("/uploads/") ? `/api/uploads/${user.fotoProfilUrl.replace("/uploads/", "")}` : user.fotoProfilUrl}
                   alt={user.nama}
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display = "none";
+                  }}
                 />
               ) : (
                 <User2 className="w-4 h-4 text-white" />

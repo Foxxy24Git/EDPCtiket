@@ -129,3 +129,13 @@ model TicketActivity {
 
   @@map("ticket_activities")
 }
+
+model MasterOption {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("master_options")
+}
+

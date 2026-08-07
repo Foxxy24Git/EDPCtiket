@@ -16,6 +16,7 @@ function font(opts: Partial<ExcelJS.Font> = {}): Partial<ExcelJS.Font> {
 
 export interface LogServerReportRow {
   no: number;
+  fotoUrl?: string | null;
   namaOrang: string;
   instansi: string;
   namaPic: string;
@@ -37,16 +38,48 @@ interface ColDef {
 
 const COLUMNS: ColDef[] = [
   { col: "A", header: "No", width: 5, get: (r) => r.no },
-  { col: "B", header: "Nama Pengunjung", width: 25, left: true, get: (r) => r.namaOrang },
-  { col: "C", header: "Instansi / Perusahaan", width: 22, left: true, get: (r) => r.instansi },
-  { col: "D", header: "PIC Pendamping", width: 22, left: true, get: (r) => r.namaPic },
-  { col: "E", header: "Keperluan", width: 28, left: true, get: (r) => r.keperluan },
-  { col: "F", header: "Waktu Masuk", width: 20, get: (r) => r.waktuMasuk },
-  { col: "G", header: "Waktu Keluar", width: 20, get: (r) => r.waktuKeluar },
-  { col: "H", header: "Dicatat Oleh", width: 20, left: true, get: (r) => r.pencatatNama },
-  { col: "I", header: "Status Approval", width: 16, get: (r) => r.statusApproval },
-  { col: "J", header: "Nama Supervisi", width: 22, left: true, get: (r) => r.approverNama },
+  { col: "B", header: "Foto", width: 14, get: () => "" },
+  { col: "C", header: "Nama Pengunjung", width: 25, left: true, get: (r) => r.namaOrang },
+  { col: "D", header: "Instansi / Perusahaan", width: 22, left: true, get: (r) => r.instansi },
+  { col: "E", header: "PIC Pendamping", width: 22, left: true, get: (r) => r.namaPic },
+  { col: "F", header: "Keperluan", width: 28, left: true, get: (r) => r.keperluan },
+  { col: "G", header: "Waktu Masuk", width: 20, get: (r) => r.waktuMasuk },
+  { col: "H", header: "Waktu Keluar", width: 20, get: (r) => r.waktuKeluar },
+  { col: "I", header: "Dicatat Oleh", width: 20, left: true, get: (r) => r.pencatatNama },
+  { col: "J", header: "Status Approval", width: 16, get: (r) => r.statusApproval },
+  { col: "K", header: "Nama Supervisi", width: 22, left: true, get: (r) => r.approverNama },
 ];
+
+function getImageBufferAndExtension(fotoUrl: string | null | undefined): { buffer: Buffer; extension: "png" | "jpeg" } | null {
+  if (!fotoUrl) return null;
+  try {
+    if (fotoUrl.startsWith("data:image/")) {
+      const match = fotoUrl.match(/^data:image\/(png|jpeg|jpg|webp);base64,(.+)$/);
+      if (match) {
+        const ext = match[1] === "png" ? "png" : "jpeg";
+        const buffer = Buffer.from(match[2], "base64");
+        return { buffer, extension: ext };
+      }
+    } else {
+      let relPath = fotoUrl;
+      if (relPath.startsWith("/api/uploads/")) {
+        relPath = relPath.replace("/api/uploads/", "uploads/");
+      } else if (relPath.startsWith("/uploads/")) {
+        relPath = relPath.replace("/uploads/", "uploads/");
+      }
+      const fullPath = join(process.cwd(), "public", relPath);
+      if (existsSync(fullPath)) {
+        const buffer = readFileSync(fullPath);
+        const lower = fullPath.toLowerCase();
+        const extension = lower.endsWith(".png") ? "png" : "jpeg";
+        return { buffer, extension };
+      }
+    }
+  } catch (e) {
+    console.error("Gagal membaca foto pengunjung untuk Excel:", e);
+  }
+  return null;
+}
 
 export async function buildLogServerWorkbook(
   logs: LogServerReportRow[],
@@ -121,7 +154,12 @@ export async function buildLogServerWorkbook(
   let rowIdx = 7;
   for (const log of logs) {
     const row = ws.getRow(rowIdx);
-    row.height = 20;
+    const imgData = getImageBufferAndExtension(log.fotoUrl);
+    if (imgData) {
+      row.height = 45; // Auto adjust row height so photo fits nicely
+    } else {
+      row.height = 20;
+    }
     const isStripe = rowIdx % 2 === 0;
 
     for (const colDef of COLUMNS) {
@@ -144,6 +182,18 @@ export async function buildLogServerWorkbook(
         };
       }
     }
+
+    if (imgData) {
+      const imgId = wb.addImage({
+        buffer: imgData.buffer as unknown as ArrayBuffer,
+        extension: imgData.extension,
+      });
+      ws.addImage(imgId, {
+        tl: { col: 1.1, row: rowIdx - 1 + 0.05 },
+        ext: { width: 40, height: 40 },
+      });
+    }
+
     rowIdx++;
   }
 
