@@ -10,18 +10,22 @@ const DEFAULT_OPTIONS = {
   merekKomputer: ["Lenovo", "HP", "Dell", "Acer", "Asus", "Apple", "Fujitsu"],
   merekEdc: ["Ingenico", "Verifone", "Pax", "Sunmi", "MoreFun", "Castle"],
   vendorList: ["PT Infomedia", "Vendor Lenovo", "PT Multipolar", "Vendor HP", "PT Visionet"],
+  deviceTypes: [
+    { id: "workstation", nama: "Workstation / Komputer", subtypes: ["Desktop", "All in One", "Mini PC", "Laptop"] },
+    { id: "edc", nama: "Mesin EDC", subtypes: [] }
+  ]
 };
 
 /** Membaca master options dari DB (dengan fallback ke JSON/Defaults) */
 async function getMasterOptionsFromDb() {
   try {
     const rows = await prisma.masterOption.findMany();
-    const map: Record<string, string[]> = {};
+    const map: Record<string, unknown> = {};
     for (const r of rows) {
       try {
         map[r.key] = JSON.parse(r.value);
       } catch {
-        map[r.key] = [];
+        map[r.key] = null;
       }
     }
 
@@ -37,15 +41,25 @@ async function getMasterOptionsFromDb() {
       Array.isArray(map.vendorList) && map.vendorList.length > 0
         ? map.vendorList
         : DEFAULT_OPTIONS.vendorList;
+    const deviceTypes =
+      Array.isArray(map.deviceTypes) && map.deviceTypes.length > 0
+        ? map.deviceTypes
+        : DEFAULT_OPTIONS.deviceTypes;
 
-    return { merekKomputer, merekEdc, vendorList };
+    return { merekKomputer, merekEdc, vendorList, deviceTypes };
   } catch (e) {
     console.error("Gagal membaca master_options dari database, fallback ke JSON:", e);
     // Fallback file
     try {
       if (fs.existsSync(DATA_FILE)) {
         const content = fs.readFileSync(DATA_FILE, "utf-8");
-        return JSON.parse(content);
+        const json = JSON.parse(content);
+        return {
+          merekKomputer: json.merekKomputer || DEFAULT_OPTIONS.merekKomputer,
+          merekEdc: json.merekEdc || DEFAULT_OPTIONS.merekEdc,
+          vendorList: json.vendorList || DEFAULT_OPTIONS.vendorList,
+          deviceTypes: json.deviceTypes || DEFAULT_OPTIONS.deviceTypes
+        };
       }
     } catch {}
     return DEFAULT_OPTIONS;
@@ -71,6 +85,11 @@ async function saveMasterOptionsToDb(data: typeof DEFAULT_OPTIONS) {
         update: { value: JSON.stringify(data.vendorList) },
         create: { key: "vendorList", value: JSON.stringify(data.vendorList) },
       }),
+      prisma.masterOption.upsert({
+        where: { key: "deviceTypes" },
+        update: { value: JSON.stringify(data.deviceTypes) },
+        create: { key: "deviceTypes", value: JSON.stringify(data.deviceTypes) },
+      }),
     ]);
   } catch (e) {
     console.error("Gagal menyimpan master_options ke DB:", e);
@@ -88,7 +107,7 @@ async function saveMasterOptionsToDb(data: typeof DEFAULT_OPTIONS) {
   }
 }
 
-/** GET /api/master-options — mengambil opsi master list (Merek & Vendor) dari database */
+/** GET /api/master-options — mengambil opsi master list (Merek, Vendor & DeviceTypes) dari database */
 export async function GET() {
   const options = await getMasterOptionsFromDb();
   return NextResponse.json(options);
@@ -114,8 +133,9 @@ export async function POST(req: Request) {
   const merekKomputer = Array.isArray(body.merekKomputer) ? body.merekKomputer : current.merekKomputer;
   const merekEdc = Array.isArray(body.merekEdc) ? body.merekEdc : current.merekEdc;
   const vendorList = Array.isArray(body.vendorList) ? body.vendorList : current.vendorList;
+  const deviceTypes = Array.isArray(body.deviceTypes) ? body.deviceTypes : current.deviceTypes;
 
-  const updated = { merekKomputer, merekEdc, vendorList };
+  const updated = { merekKomputer, merekEdc, vendorList, deviceTypes };
   await saveMasterOptionsToDb(updated);
 
   return NextResponse.json({ ok: true, options: updated });

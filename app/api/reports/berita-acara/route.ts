@@ -58,18 +58,27 @@ function buildDeviceSummaryText(deviceList: Array<{ namaPerangkat: string; merek
     const raw = (d.merekKomputer || d.namaPerangkat || "").trim();
     let cat = "Komputer";
 
-    if (/edc/i.test(raw)) {
+    if (raw.startsWith("[")) {
+      const match = /^\[([^\]]+)\]/.exec(raw);
+      if (match) {
+        cat = match[1].trim().replace(/workstation/i, "Komputer").replace(/\s*-\s*/g, " ").trim();
+      }
+    } else if (/edc/i.test(raw)) {
       cat = "Mesin EDC";
+    } else if (/router/i.test(raw)) {
+      cat = "Router";
+    } else if (/atm/i.test(raw)) {
+      cat = "ATM";
     } else if (/desktop/i.test(raw)) {
-      cat = "Komputer - Desktop";
+      cat = "Komputer Desktop";
     } else if (/mini pc/i.test(raw)) {
-      cat = "Komputer - Mini PC";
+      cat = "Komputer Mini PC";
     } else if (/laptop/i.test(raw)) {
-      cat = "Komputer - Laptop";
+      cat = "Komputer Laptop";
     } else if (/all in one|all-in-one|aio/i.test(raw)) {
       cat = "Komputer All in One";
     } else {
-      cat = "Komputer";
+      cat = d.namaPerangkat || "Komputer";
     }
 
     counts[cat] = (counts[cat] || 0) + 1;
@@ -94,14 +103,33 @@ function generateBeritaAcaraHtml(payload: BeritaAcaraPayload): string {
   const format = payload.format ?? "word";
 
   return `<!DOCTYPE html>
-<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+<html xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns:m="http://schemas.microsoft.com/office/2004/12/omml" xmlns="http://www.w3.org/TR/REC-html40">
 <head>
 <meta charset="utf-8">
 <title>BERITA ACARA SERAH TERIMA PERANGKAT - ${payload.noTiket || payload.cabang}</title>
+<!--[if gte mso 9]>
+<xml>
+ <w:WordDocument>
+  <w:View>Print</w:View>
+  <w:Zoom>100</w:Zoom>
+  <w:DoNotOptimizeForBrowser/>
+ </w:WordDocument>
+</xml>
+<![endif]-->
 <style>
-  @page {
-    size: A4 portrait;
-    margin: 20mm 20mm 20mm 20mm;
+  @page WordSection1 {
+    size: 21.0cm 29.7cm;
+    margin: 2.0cm 2.0cm 2.0cm 2.0cm;
+    mso-page-orientation: portrait;
+    mso-header-margin: 35.4pt;
+    mso-footer-margin: 35.4pt;
+    mso-paper-source: 0;
+  }
+  div.WordSection1 {
+    page: WordSection1;
+    width: 480pt;
+    max-width: 100%;
+    margin: 0 auto;
   }
   body {
     font-family: Arial, Helvetica, sans-serif;
@@ -110,8 +138,12 @@ function generateBeritaAcaraHtml(payload: BeritaAcaraPayload): string {
     color: #000000;
     background-color: #ffffff;
     margin: 0 auto;
-    padding: ${format === 'print' ? '20px' : '10px'};
-    max-width: 700px;
+    padding: ${format === 'print' ? '20px' : '0px'};
+  }
+  table {
+    border-collapse: collapse;
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
   }
   .header-logo {
     text-align: left;
@@ -173,72 +205,74 @@ function generateBeritaAcaraHtml(payload: BeritaAcaraPayload): string {
 </head>
 <body>
   ${format === 'print' ? `
-    <div className="print-btn-bar" onclick="window.print()">
+    <div class="print-btn-bar" onclick="window.print()">
       🖨️ Cetak Dokumentasi / Simpan ke PDF
     </div>
   ` : ''}
 
-  <!-- LOGO BANK NAGARI -->
-  <div className="header-logo" align="left">
-    <img src="${logoBase64}" width="160" height="42" alt="Logo Bank Nagari" style="width: 160px; height: 42px; max-height: 42px; object-fit: contain; display: block;" />
-  </div>
+  <div class="WordSection1" style="width: 480pt; max-width: 100%; margin: 0 auto;">
+    <!-- LOGO BANK NAGARI -->
+    <div class="header-logo" align="left" style="margin-bottom: 20px;">
+      <img src="${logoBase64}" width="160" height="42" alt="Logo Bank Nagari" style="width: 160px; height: 42px; max-height: 42px; object-fit: contain; display: block;" />
+    </div>
 
-  <!-- JUDUL -->
-  <div className="title-section" align="center" style="text-align: center; margin: 20px 0 24px 0;">
-    <h1 align="center" style="font-size: 16px; font-weight: bold; margin: 0; text-transform: uppercase; text-align: center; font-family: Arial, sans-serif;">BERITA ACARA</h1>
-    <h2 align="center" style="font-size: 15px; font-weight: bold; margin: 4px 0 0 0; text-transform: uppercase; text-align: center; font-family: Arial, sans-serif;">SERAH TERIMA PERANGKAT</h2>
-  </div>
+    <!-- JUDUL -->
+    <div class="title-section" align="center" style="text-align: center; margin: 20px 0 24px 0;">
+      <h1 align="center" style="font-size: 16px; font-weight: bold; margin: 0; text-transform: uppercase; text-align: center; font-family: Arial, sans-serif;">BERITA ACARA</h1>
+      <h2 align="center" style="font-size: 15px; font-weight: bold; margin: 4px 0 0 0; text-transform: uppercase; text-align: center; font-family: Arial, sans-serif;">SERAH TERIMA PERANGKAT</h2>
+    </div>
 
-  <p className="intro-paragraph" style="margin-bottom: 20px; text-align: justify; line-height: 1.6;">
-    Pada hari ini <strong>${dateFormatted.hari}</strong> Tanggal <strong>${dateFormatted.tglFull}</strong> telah di lakukan penyerahan <strong>${summaryDevicesText}</strong> milik <strong>${cabangText}</strong> dengan detail sebagai berikut:
-  </p>
+    <p class="intro-paragraph" style="margin-bottom: 20px; text-align: justify; line-height: 1.6; font-size: 13px; font-family: Arial, sans-serif;">
+      Pada hari ini <strong>${dateFormatted.hari}</strong> Tanggal <strong>${dateFormatted.tglFull}</strong> telah di lakukan penyerahan <strong>${summaryDevicesText}</strong> milik <strong>${cabangText}</strong> dengan detail sebagai berikut:
+    </p>
 
-  <!-- TABEL RINCIAN DAFTAR PERANGKAT (100% LEBAR SEJAJAR TEKS) -->
-  <table border="1" cellspacing="0" cellpadding="6" style="width: 100%; margin: 20px 0 24px 0; border-collapse: collapse; border: 1px solid #000000; font-size: 13px; font-family: Arial, sans-serif;">
-    <thead>
-      <tr bgcolor="#99CCFF" style="background-color: #99CCFF;">
-        <th border="1" style="border: 1px solid #000000; padding: 6px; text-align: center; width: 10%; font-weight: bold;">No</th>
-        <th border="1" style="border: 1px solid #000000; padding: 6px; text-align: center; width: 55%; font-weight: bold;">Nama Perangkat</th>
-        <th border="1" style="border: 1px solid #000000; padding: 6px; text-align: center; width: 35%; font-weight: bold;">S/N</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${payload.deviceList.map((item, idx) => `
-        <tr>
-          <td border="1" style="border: 1px solid #000000; padding: 6px; text-align: center;">${idx + 1}</td>
-          <td border="1" style="border: 1px solid #000000; padding: 6px 10px;">${item.namaPerangkat}</td>
-          <td border="1" style="border: 1px solid #000000; padding: 6px; text-align: center; font-family: monospace;">${item.sn}</td>
+    <!-- TABEL RINCIAN DAFTAR PERANGKAT (PRESISI MSO WORD 480PT) -->
+    <table border="1" cellspacing="0" cellpadding="6" width="100%" style="width: 100%; max-width: 480pt; margin: 20px 0 24px 0; border-collapse: collapse; border: 1px solid #000000; font-size: 13px; font-family: Arial, sans-serif;">
+      <thead>
+        <tr bgcolor="#99CCFF" style="background-color: #99CCFF;">
+          <th width="40" style="border: 1px solid #000000; padding: 6px; text-align: center; width: 40px; font-weight: bold;">No</th>
+          <th width="280" style="border: 1px solid #000000; padding: 6px 10px; text-align: center; width: 280px; font-weight: bold;">Nama Perangkat</th>
+          <th width="160" style="border: 1px solid #000000; padding: 6px; text-align: center; width: 160px; font-weight: bold;">S/N</th>
         </tr>
-      `).join('')}
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        ${payload.deviceList.map((item, idx) => `
+          <tr>
+            <td width="40" style="border: 1px solid #000000; padding: 6px; text-align: center; width: 40px;">${idx + 1}</td>
+            <td width="280" style="border: 1px solid #000000; padding: 6px 10px; width: 280px;">${item.namaPerangkat}</td>
+            <td width="160" style="border: 1px solid #000000; padding: 6px; text-align: center; font-family: monospace; width: 160px;">${item.sn}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
 
-  <p className="closing-paragraph" style="margin-top: 24px; margin-bottom: 24px; text-align: justify;">
-    Demikianlah tanda terima ini dibuat rangkap 2 (dua) untuk dapat digunakan sebagaimana mestinya.
-  </p>
+    <p class="closing-paragraph" style="margin-top: 24px; margin-bottom: 24px; text-align: justify; font-size: 13px; font-family: Arial, sans-serif;">
+      Demikianlah tanda terima ini dibuat rangkap 2 (dua) untuk dapat digunakan sebagaimana mestinya.
+    </p>
 
-  <!-- TANGGAL PADANG BERADA DI TENGAH -->
-  <div className="location-date" align="center" style="text-align: center; margin: 20px 0; font-family: Arial, sans-serif;">
-    Padang, ${dateFormatted.tglFull}
+    <!-- TANGGAL PADANG BERADA DI TENGAH -->
+    <div class="location-date" align="center" style="text-align: center; margin: 20px 0; font-family: Arial, sans-serif; font-size: 13px;">
+      Padang, ${dateFormatted.tglFull}
+    </div>
+
+    <!-- KOTAK TANDA TANGAN 2 KOLOM (PRESISI 480PT) -->
+    <table border="1" cellspacing="0" cellpadding="10" width="100%" style="width: 100%; max-width: 480pt; border-collapse: collapse; border: 1px solid #000000; margin-top: 10px; font-size: 13px; font-family: Arial, sans-serif;">
+      <tr>
+        <td width="50%" height="150" valign="top" style="width: 50%; border: 1px solid #000000; vertical-align: top; padding: 12px; height: 150px;">
+          <div style="font-size: 13px;">Diserahkan oleh:</div>
+          <div style="font-size: 11px; color: #444444; margin-bottom: 65px;">${payload.jabatanDiserahkan}</div>
+          <div style="font-size: 13px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">${payload.diserahkanOleh}</div>
+          <div style="font-size: 11px; color: #555555;">Staff</div>
+        </td>
+        <td width="50%" height="150" valign="top" style="width: 50%; border: 1px solid #000000; vertical-align: top; padding: 12px; height: 150px;">
+          <div style="font-size: 13px;">Diterima oleh:</div>
+          <div style="font-size: 11px; color: #444444; margin-bottom: 65px;">${payload.diterimaOleh}</div>
+          <div style="font-size: 13px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">${payload.diterimaPic || "........................"}</div>
+          <div style="font-size: 11px; color: #555555;">Penerima Cabang</div>
+        </td>
+      </tr>
+    </table>
   </div>
-
-  <!-- KOTAK TANDA TANGAN 2 KOLOM (NAMA DI DASAR KOTAK BISA UNTUK TTD FISIK) -->
-  <table border="1" cellspacing="0" cellpadding="10" style="width: 100%; border-collapse: collapse; border: 1px solid #000000; margin-top: 10px; font-size: 13px; font-family: Arial, sans-serif;">
-    <tr>
-      <td width="50%" height="160" valign="top" style="width: 50%; border: 1px solid #000000; vertical-align: top; padding: 12px; height: 160px;">
-        <div style="font-size: 13px;">Diserahkan oleh:</div>
-        <div style="font-size: 11px; color: #444444; margin-bottom: 70px;">${payload.jabatanDiserahkan}</div>
-        <div style="font-size: 13px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">${payload.diserahkanOleh}</div>
-        <div style="font-size: 11px; color: #555555;">Staff</div>
-      </td>
-      <td width="50%" height="160" valign="top" style="width: 50%; border: 1px solid #000000; vertical-align: top; padding: 12px; height: 160px;">
-        <div style="font-size: 13px;">Diterima oleh:</div>
-        <div style="font-size: 11px; color: #444444; margin-bottom: 70px;">${payload.diterimaOleh}</div>
-        <div style="font-size: 13px; font-weight: bold; text-decoration: underline; text-transform: uppercase;">${payload.diterimaPic || "........................"}</div>
-        <div style="font-size: 11px; color: #555555;">Penerima Cabang</div>
-      </td>
-    </tr>
-  </table>
 </body>
 </html>`;
 }
@@ -311,7 +345,7 @@ export async function GET(req: Request) {
 
     const payload: BeritaAcaraPayload = {
       cabang: ticket.wsCabang || "Utama",
-      tgl: ticket.wsTanggalMasuk ? new Date(ticket.wsTanggalMasuk).toISOString() : new Date().toISOString(),
+      tgl: new Date().toISOString(),
       diserahkanOleh: (ticket.owner?.nama || session.username || "DIMAS TEGUH PRIBADI").toUpperCase(),
       jabatanDiserahkan: "Staff Bagian Infrastruktur Divisi T&D",
       diterimaOleh: `Cabang ${ticket.wsCabang || "Utama"}`,

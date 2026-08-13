@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, TicketPlus, Monitor, CreditCard, Laptop, Cpu, Server, Tv } from "lucide-react";
+import { CheckCircle2, TicketPlus, Monitor, CreditCard } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -46,11 +46,26 @@ const DAFTAR_CABANG = [
   "PADANG PANJANG",
 ];
 
-const MEREK_KOMPUTER_LIST = ["Lenovo", "HP", "Dell", "Acer", "Asus", "Apple", "Fujitsu", "Lainnya (Ketik Manual)"];
+const MEREK_KOMPUTER_LIST = ["Lenovo", "HP", "Dell", "Acer", "Asus", "Apple", "Fujitsu"];
 
 type CpTipe = "pic" | "wag";
-type JenisPerangkat = "komputer" | "edc";
-type TipeKomputer = "aio" | "desktop" | "laptop" | "mini_pc";
+
+export interface CustomField {
+  id: string;
+  label: string;
+  type: "text" | "date" | "select" | "textarea";
+  options?: string[];
+  required?: boolean;
+  placeholder?: string;
+}
+
+interface DeviceTypeOption {
+  id: string;
+  nama: string;
+  subtypes: string[];
+  customFields?: CustomField[];
+}
+
 interface WorkstationFormProps {
   onSuccess?: () => void;
 }
@@ -58,7 +73,11 @@ interface WorkstationFormProps {
 export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
   const [daftarCabang, setDaftarCabang] = useState<string[]>([]);
   const [merekKomputerList, setMerekKomputerList] = useState<string[]>(MEREK_KOMPUTER_LIST);
-  const [merekEdcList, setMerekEdcList] = useState<string[]>(["Ingenico", "Verifone", "Pax", "Sunmi", "MoreFun", "Castle", "Lainnya (Ketik Manual)"]);
+  const [merekEdcList, setMerekEdcList] = useState<string[]>(["Ingenico", "Verifone", "Pax", "Sunmi", "MoreFun", "Castle"]);
+  const [deviceTypesList, setDeviceTypesList] = useState<DeviceTypeOption[]>([
+    { id: "workstation", nama: "Komputer", subtypes: ["Desktop", "All-in-One", "Laptop", "Mini PC"] },
+    { id: "edc", nama: "Mesin EDC", subtypes: [] },
+  ]);
 
   useEffect(() => {
     fetch("/api/workstation")
@@ -79,20 +98,22 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
       .then((res) => res.json())
       .then((data) => {
         if (data.merekKomputer && Array.isArray(data.merekKomputer)) {
-          setMerekKomputerList([...data.merekKomputer, "Lainnya (Ketik Manual)"]);
+          setMerekKomputerList(data.merekKomputer.filter((m: string) => m !== "Lainnya (Ketik Manual)"));
         }
         if (data.merekEdc && Array.isArray(data.merekEdc)) {
-          setMerekEdcList([...data.merekEdc, "Lainnya (Ketik Manual)"]);
+          setMerekEdcList(data.merekEdc.filter((m: string) => m !== "Lainnya (Ketik Manual)"));
+        }
+        if (data.deviceTypes && Array.isArray(data.deviceTypes) && data.deviceTypes.length > 0) {
+          setDeviceTypesList(data.deviceTypes);
         }
       })
       .catch((err) => console.error("Gagal memuat master options:", err));
   }, []);
 
-  // Perangkat & Merek
-  const [jenisPerangkat, setJenisPerangkat] = useState<JenisPerangkat>("komputer");
-  const [tipeKomputer, setTipeKomputer] = useState<TipeKomputer>("aio");
+  // Perangkat & Merek Dinamis
+  const [selectedDeviceId, setSelectedDeviceId] = useState<string>("workstation");
+  const [selectedSubtype, setSelectedSubtype] = useState<string>("");
   const [merekPilihan, setMerekPilihan] = useState("");
-  const [merekCustom, setMerekCustom] = useState("");
 
   // Input Awal Workstation
   const [wsCabang, setWsCabang] = useState("");
@@ -102,22 +123,70 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
   const [wsKelengkapan, setWsKelengkapan] = useState("");
   const [wsSnKomputer, setWsSnKomputer] = useState("");
   const [wsKerusakan, setWsKerusakan] = useState("");
+  const [customValues, setCustomValues] = useState<Record<string, string>>({});
 
   // Field Tiket/CP & Kegiatan
   const [cpTipe] = useState<CpTipe>("pic");
   const [cpNama, setCpNama] = useState("");
   const [cpTelp, setCpTelp] = useState("");
-  const [kegiatan, setKegiatan] = useState("Menerima Komputer");
+  const [kegiatan, setKegiatan] = useState("Menerima Perangkat");
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [created, setCreated] = useState<string | null>(null);
 
+  const activeDeviceObj = deviceTypesList.find((d) => d.id === selectedDeviceId) || deviceTypesList[0];
+
+  const defaultFields: CustomField[] = [
+    { id: "cabang", label: "Cabang", type: "select", required: true, options: daftarCabang },
+    { id: "tanggalMasuk", label: "Tanggal Masuk", type: "date", required: true },
+    { id: "noSurat", label: "Nomor Surat", type: "text", required: true, placeholder: "cth: SR/00/XX/XXX/00-2026" },
+    { id: "merek", label: `Merek ${activeDeviceObj ? activeDeviceObj.nama : "Perangkat"}`, type: "select", required: true },
+    { id: "capem", label: "Cabang Pembantu / Capem (opsional)", type: "text", required: false, placeholder: "cth: UNAND, dsb" },
+    { id: "kelengkapan", label: "Kelengkapan", type: "text", required: true, placeholder: "cth: Adaptor, kabel, dus, dsb" },
+    { id: "sn", label: `Serial Number (SN) ${activeDeviceObj ? activeDeviceObj.nama : "Perangkat"}`, type: "text", required: true, placeholder: "Nomor seri mesin / perangkat..." },
+    { id: "kerusakan", label: "Kerusakan", type: "textarea", required: true, placeholder: "Jelaskan detail kerusakan..." },
+  ];
+
+  const activeFields =
+    activeDeviceObj?.customFields && activeDeviceObj.customFields.length > 0
+      ? activeDeviceObj.customFields
+      : defaultFields;
+
+  function getFieldValue(fieldId: string): string {
+    switch (fieldId) {
+      case "cabang": return wsCabang;
+      case "tanggalMasuk": return wsTanggalMasuk;
+      case "noSurat": return wsNoSurat;
+      case "merek": return merekPilihan;
+      case "capem": return wsCapem;
+      case "kelengkapan": return wsKelengkapan;
+      case "sn": return wsSnKomputer;
+      case "kerusakan": return wsKerusakan;
+      default: return customValues[fieldId] || "";
+    }
+  }
+
+  function setFieldValue(fieldId: string, val: string) {
+    switch (fieldId) {
+      case "cabang": setWsCabang(val); break;
+      case "tanggalMasuk": setWsTanggalMasuk(val); break;
+      case "noSurat": setWsNoSurat(val); break;
+      case "merek": setMerekPilihan(val); break;
+      case "capem": setWsCapem(val); break;
+      case "kelengkapan": setWsKelengkapan(val); break;
+      case "sn": setWsSnKomputer(val); break;
+      case "kerusakan": setWsKerusakan(val); break;
+      default:
+        setCustomValues((prev) => ({ ...prev, [fieldId]: val }));
+        break;
+    }
+  }
+
   function resetForm() {
-    setJenisPerangkat("komputer");
-    setTipeKomputer("aio");
+    setSelectedDeviceId("workstation");
+    setSelectedSubtype("");
     setMerekPilihan("");
-    setMerekCustom("");
     setWsCabang("");
     setWsTanggalMasuk("");
     setWsNoSurat("");
@@ -125,27 +194,22 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
     setWsKelengkapan("");
     setWsSnKomputer("");
     setWsKerusakan("");
+    setCustomValues({});
     setCpNama("");
     setCpTelp("");
-    setKegiatan("Menerima Komputer");
+    setKegiatan("Menerima Perangkat");
     setError("");
   }
 
-  // Hitung Merek Komputer final string
+  // Hitung Merek Komputer/Perangkat final string
   function getFormattedMerek(): string {
-    const brand = merekPilihan === "Lainnya (Ketik Manual)" ? merekCustom.trim() : merekPilihan.trim();
-    if (jenisPerangkat === "edc") {
-      return "[EDC]";
+    const devName = activeDeviceObj ? activeDeviceObj.nama.replace(/\s*\/\s*Komputer/i, "") : "Perangkat";
+    const brand = merekPilihan.trim();
+    
+    if (selectedSubtype) {
+      return brand ? `[${devName} - ${selectedSubtype}] ${brand}` : `[${devName} - ${selectedSubtype}]`;
     }
-    const tipeLabel =
-      tipeKomputer === "aio"
-        ? "AIO"
-        : tipeKomputer === "desktop"
-        ? "Desktop"
-        : tipeKomputer === "laptop"
-        ? "Laptop"
-        : "Mini PC";
-    return brand ? `[Komputer - ${tipeLabel}] ${brand}` : `[Komputer - ${tipeLabel}]`;
+    return brand ? `[${devName}] ${brand}` : `[${devName}]`;
   }
 
   async function submit(e: React.FormEvent) {
@@ -154,24 +218,39 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
 
     const formattedMerek = getFormattedMerek();
 
-    // Validasi input wajib
-    if (!wsCabang) return setError("Cabang wajib dipilih.");
-    if (!wsTanggalMasuk) return setError("Tanggal Masuk wajib diisi.");
-    if (!wsNoSurat.trim()) return setError("Nomor Surat wajib diisi.");
-    if (jenisPerangkat === "komputer") {
-      if (!merekPilihan) return setError("Merek komputer wajib dipilih.");
-      if (merekPilihan === "Lainnya (Ketik Manual)" && !merekCustom.trim()) {
-        return setError("Nama merek manual wajib diisi.");
+    // Validasi input wajib dari activeFields
+    for (const field of activeFields) {
+      if (field.required !== false && field.id !== "capem") {
+        const val = getFieldValue(field.id);
+        if (!val || !val.trim()) {
+          return setError(`${field.label} wajib diisi.`);
+        }
       }
     }
-    if (!wsKelengkapan.trim()) return setError("Kelengkapan wajib diisi.");
-    if (!wsSnKomputer.trim()) return setError("SN Komputer / EDC wajib diisi.");
-    if (!wsKerusakan.trim()) return setError("Kerusakan wajib diisi.");
 
-    if (cpTipe === "pic" && (!cpNama.trim() || !cpTelp.trim()))
-      return setError("No PIC wajib mengisi nama dan nomor telepon.");
+    if (cpTipe === "pic") {
+      if (!cpNama.trim()) return setError("Nama PIC wajib diisi.");
+      if (!cpTelp.trim()) return setError("Nomor telepon PIC wajib diisi.");
+      
+      const phoneDigitsOnly = /^[0-9]+$/;
+      if (!phoneDigitsOnly.test(cpTelp.trim()) || cpTelp.trim().length < 10 || cpTelp.trim().length > 14) {
+        return setError("Nomor telepon (PIC) hanya boleh berupa angka (numeric) dengan panjang 10 hingga 14 digit.");
+      }
+    }
     if (cpTipe === "wag" && !cpNama.trim()) return setError("Nama WAG wajib diisi.");
     if (!kegiatan.trim()) return setError("Kegiatan penanganan pertama wajib diisi.");
+
+    let finalKerusakan = wsKerusakan;
+    const extraCustomEntries = Object.entries(customValues).filter(([k, v]) => Boolean(v && v.trim()));
+    if (extraCustomEntries.length > 0) {
+      const extraText = extraCustomEntries
+        .map(([k, v]) => {
+          const cfg = activeFields.find((f) => f.id === k);
+          return `${cfg ? cfg.label : k}: ${v}`;
+        })
+        .join(" | ");
+      finalKerusakan = finalKerusakan ? `${finalKerusakan}\n[Catatan Tambahan: ${extraText}]` : extraText;
+    }
 
     setSubmitting(true);
     try {
@@ -180,26 +259,24 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           kategori: "workstation",
-          wsCabang,
-          wsTanggalMasuk,
-          wsNoSurat,
+          wsCabang: wsCabang || daftarCabang[0] || "PAYAKUMBUH",
+          wsTanggalMasuk: wsTanggalMasuk || new Date().toISOString(),
+          wsNoSurat: wsNoSurat || "SR/00/XX/2026",
           wsMerekKomputer: formattedMerek,
           wsCapem: wsCapem.trim() || undefined,
-          wsKelengkapan,
-          wsSnKomputer,
-          wsKerusakan,
+          wsKelengkapan: wsKelengkapan || "Lengkap",
+          wsSnKomputer: wsSnKomputer || "-",
+          wsKerusakan: finalKerusakan || "Pemeriksaan perangkat",
           cpTipe,
           cpNama,
-          cpTelp: cpTipe === "pic" ? cpTelp : "",
+          cpTelp: cpTipe === "pic" ? cpTelp.trim() : "",
           kegiatan,
         }),
       });
       let data: { error?: string; item?: { noTiket?: string } } = {};
       try {
         data = await res.json();
-      } catch {
-        // ignore JSON parse error
-      }
+      } catch {}
 
       if (!res.ok) {
         setError(data.error ?? `Gagal membuka tiket (${res.status} ${res.statusText}).`);
@@ -229,11 +306,10 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
           </div>
           <h3 className="text-lg font-bold text-gray-900 mb-1">Tiket Berhasil Dibuka!</h3>
           <p className="text-sm text-gray-500 mb-4">
-            Tiket Workstation berhasil dibuat dengan nomor seri tiket:
-            <span className="block mt-2 font-bold font-mono text-xl text-green-700 bg-green-50 px-3 py-1.5 rounded-md border border-green-100">{created}</span>
+            Nomor tiket Anda: <span className="font-bold text-primary font-mono">{created}</span>
           </p>
           <Button onClick={() => setCreated(null)} className="w-full">
-            Tutup &amp; Buat Tiket Lain
+            Tutup
           </Button>
         </div>
       </Modal>
@@ -245,204 +321,196 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
             <p className="text-xs text-gray-500">Pilih jenis perangkat lalu lengkapi detail kerusakan.</p>
           </div>
 
-          {/* ── PILIH JENIS PERANGKAT: KOMPUTER VS EDC ── */}
           <div className="space-y-2">
             <label className="text-sm font-semibold text-gray-800">
               Jenis Perangkat <span className="text-red-500">*</span>
             </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setJenisPerangkat("komputer");
-                  setMerekPilihan("");
-                  setKegiatan("Menerima Komputer");
-                }}
-                className={`flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left ${
-                  jenisPerangkat === "komputer"
-                    ? "border-primary bg-primary/5 text-primary shadow-sm"
-                    : "border-gray-200 hover:border-gray-300 text-gray-600 bg-white"
-                }`}
-              >
-                <div className={`p-2 rounded-lg ${jenisPerangkat === "komputer" ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>
-                  <Monitor className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-bold text-sm">Komputer</p>
-                  <p className="text-[11px] text-gray-400">Desktop, Laptop, AIO, Mini PC</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setJenisPerangkat("edc");
-                  setMerekPilihan("");
-                  setKegiatan("Menerima EDC");
-                }}
-                className={`flex items-center gap-3 p-3.5 rounded-xl border-2 transition-all text-left ${
-                  jenisPerangkat === "edc"
-                    ? "border-primary bg-primary/5 text-primary shadow-sm"
-                    : "border-gray-200 hover:border-gray-300 text-gray-600 bg-white"
-                }`}
-              >
-                <div className={`p-2 rounded-lg ${jenisPerangkat === "edc" ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>
-                  <CreditCard className="w-5 h-5" />
-                </div>
-                <div>
-                  <p className="font-bold text-sm">Mesin EDC</p>
-                  <p className="text-[11px] text-gray-400">Electronic Data Capture Merchant</p>
-                </div>
-              </button>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {deviceTypesList.map((dt) => {
+                const isSelected = selectedDeviceId === dt.id;
+                return (
+                  <button
+                    key={dt.id}
+                    type="button"
+                    onClick={() => {
+                      setSelectedDeviceId(dt.id);
+                      setSelectedSubtype(dt.subtypes && dt.subtypes.length > 0 ? dt.subtypes[0] : "");
+                      setMerekPilihan("");
+                      setKegiatan(`Menerima ${dt.nama}`);
+                    }}
+                    className={`flex items-center gap-3 p-3 rounded-xl border-2 transition-all text-left ${
+                      isSelected
+                        ? "border-primary bg-primary/5 text-primary shadow-sm font-bold"
+                        : "border-gray-200 hover:border-gray-300 text-gray-600 bg-white"
+                    }`}
+                  >
+                    <div className={`p-2 rounded-lg shrink-0 ${isSelected ? "bg-primary text-white" : "bg-gray-100 text-gray-500"}`}>
+                      {dt.id === "edc" ? (
+                        <CreditCard className="w-5 h-5" />
+                      ) : (
+                        <Monitor className="w-5 h-5" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm truncate">{dt.nama}</p>
+                      <p className="text-[11px] text-gray-400 truncate">
+                        {dt.subtypes && dt.subtypes.length > 0 ? dt.subtypes.join(", ") : "Standar Perangkat"}
+                      </p>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* ── PILIH SUB-TIPE KOMPUTER (Hanya jika Komputer) ── */}
-          {jenisPerangkat === "komputer" && (
+          {activeDeviceObj && activeDeviceObj.subtypes && activeDeviceObj.subtypes.length > 0 && (
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               className="space-y-2 pt-1"
             >
               <label className="text-sm font-semibold text-gray-800">
-                Tipe Komputer <span className="text-red-500">*</span>
+                Tipe / Sub-Judul {activeDeviceObj.nama} <span className="text-red-500">*</span>
               </label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { id: "aio", label: "AIO (All-in-One)", Icon: Tv },
-                  { id: "desktop", label: "Desktop PC", Icon: Cpu },
-                  { id: "laptop", label: "Laptop", Icon: Laptop },
-                  { id: "mini_pc", label: "Mini PC", Icon: Server },
-                ].map((item) => (
+              <div className="flex flex-wrap gap-2">
+                {activeDeviceObj.subtypes.map((sub) => (
                   <button
-                    key={item.id}
+                    key={sub}
                     type="button"
-                    onClick={() => setTipeKomputer(item.id as TipeKomputer)}
-                    className={`flex items-center gap-2 px-3 py-2.5 rounded-lg border text-xs font-semibold transition-all ${
-                      tipeKomputer === item.id
+                    onClick={() => setSelectedSubtype(sub)}
+                    className={`flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                      selectedSubtype === sub
                         ? "border-primary bg-primary-50 text-primary font-bold shadow-sm"
                         : "border-gray-200 text-gray-600 hover:bg-gray-50"
                     }`}
                   >
-                    <item.Icon className="w-4 h-4 shrink-0" />
-                    <span>{item.label}</span>
+                    <span>{sub}</span>
                   </button>
                 ))}
               </div>
             </motion.div>
           )}
 
-          {/* Cabang & Tanggal Masuk */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Select
-              label="Cabang"
-              required
-              value={wsCabang}
-              onChange={(e) => setWsCabang(e.target.value)}
-            >
-              <option value="">— Pilih Cabang —</option>
-              {daftarCabang.map((cabang) => (
-                <option key={cabang} value={cabang}>
-                  {cabang}
-                </option>
-              ))}
-            </Select>
+            {activeFields.map((field) => {
+              const val = getFieldValue(field.id);
 
-            <div className="flex flex-col gap-1">
-              <label htmlFor="ws-tanggal-masuk" className="text-sm font-medium text-gray-700">
-                Tanggal Masuk <span className="text-red-500">*</span>
-              </label>
-              <input
-                id="ws-tanggal-masuk"
-                type="datetime-local"
-                required
-                value={wsTanggalMasuk}
-                onChange={(e) => setWsTanggalMasuk(e.target.value)}
-                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Nomor Surat"
-              required
-              value={wsNoSurat}
-              onChange={(e) => setWsNoSurat(e.target.value)}
-              placeholder="cth: SR/00/XX/XXX/00-2026"
-            />
-
-            {/* Merek Select (Hanya untuk Komputer) */}
-            {jenisPerangkat === "komputer" && (
-              <div className="flex flex-col gap-1">
-                <Select
-                  label="Merek Komputer"
-                  required
-                  value={merekPilihan}
-                  onChange={(e) => setMerekPilihan(e.target.value)}
-                >
-                  <option value="">— Pilih Merek —</option>
-                  {merekKomputerList.map((merek) => (
-                    <option key={merek} value={merek}>
-                      {merek}
-                    </option>
-                  ))}
-                </Select>
-
-                {merekPilihan === "Lainnya (Ketik Manual)" && (
-                  <motion.div initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} className="mt-1">
-                    <Input
-                      label=""
-                      required
-                      placeholder="Tuliskan nama merek perangkat..."
-                      value={merekCustom}
-                      onChange={(e) => setMerekCustom(e.target.value)}
+              if (field.type === "textarea") {
+                return (
+                  <div key={field.id} className="sm:col-span-2 flex flex-col gap-1">
+                    <label htmlFor={`field-${field.id}`} className="text-sm font-medium text-gray-700">
+                      {field.label} {field.required !== false && <span className="text-red-500">*</span>}
+                    </label>
+                    <textarea
+                      id={`field-${field.id}`}
+                      required={field.required !== false}
+                      rows={2}
+                      value={val}
+                      onChange={(e) => setFieldValue(field.id, e.target.value)}
+                      placeholder={field.placeholder || `Jelaskan detail ${field.label.toLowerCase()}...`}
+                      className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
                     />
-                  </motion.div>
-                )}
-              </div>
-            )}
-          </div>
+                  </div>
+                );
+              }
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label="Cabang Pembantu / Capem (opsional)"
-              value={wsCapem}
-              onChange={(e) => setWsCapem(e.target.value)}
-              placeholder="cth: UNAND, dsb"
-            />
-            <Input
-              label="Kelengkapan"
-              required
-              value={wsKelengkapan}
-              onChange={(e) => setWsKelengkapan(e.target.value)}
-              placeholder="cth: Adaptor, kabel, dus, dsb"
-            />
-          </div>
+              if (field.id === "cabang") {
+                return (
+                  <Select
+                    key={field.id}
+                    label={field.label}
+                    required={field.required !== false}
+                    value={wsCabang}
+                    onChange={(e) => setWsCabang(e.target.value)}
+                  >
+                    <option value="">— Pilih Cabang —</option>
+                    {daftarCabang.map((cabang) => (
+                      <option key={cabang} value={cabang}>
+                        {cabang}
+                      </option>
+                    ))}
+                  </Select>
+                );
+              }
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Input
-              label={`SN ${jenisPerangkat === "komputer" ? "Komputer" : "EDC"}`}
-              required
-              value={wsSnKomputer}
-              onChange={(e) => setWsSnKomputer(e.target.value)}
-              placeholder="Nomor seri mesin / perangkat..."
-            />
-          </div>
+              if (field.id === "merek") {
+                const rawOpts =
+                  field.options && field.options.length > 0
+                    ? field.options
+                    : selectedDeviceId === "edc"
+                    ? merekEdcList
+                    : merekKomputerList;
 
-          <div className="flex flex-col gap-1">
-            <label htmlFor="ws-kerusakan" className="text-sm font-medium text-gray-700">
-              Kerusakan <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="ws-kerusakan"
-              required
-              rows={2}
-              value={wsKerusakan}
-              onChange={(e) => setWsKerusakan(e.target.value)}
-              placeholder="Jelaskan detail kerusakan komputer / EDC..."
-              className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
-            />
+                const opts = rawOpts.filter((m) => m !== "Lainnya (Ketik Manual)");
+
+                return (
+                  <div key={field.id} className="flex flex-col gap-1">
+                    <Select
+                      label={field.label || `Merek ${activeDeviceObj ? activeDeviceObj.nama : "Perangkat"}`}
+                      required={field.required !== false}
+                      value={merekPilihan}
+                      onChange={(e) => setMerekPilihan(e.target.value)}
+                    >
+                      <option value="">— Pilih Merek —</option>
+                      {opts.map((merek) => (
+                        <option key={merek} value={merek}>
+                          {merek}
+                        </option>
+                      ))}
+                    </Select>
+                  </div>
+                );
+              }
+
+              if (field.type === "select") {
+                const opts = field.options && field.options.length > 0 ? field.options : [];
+                return (
+                  <Select
+                    key={field.id}
+                    label={field.label}
+                    required={field.required !== false}
+                    value={val}
+                    onChange={(e) => setFieldValue(field.id, e.target.value)}
+                  >
+                    <option value="">— Pilih {field.label} —</option>
+                    {opts.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </Select>
+                );
+              }
+
+              if (field.type === "date") {
+                return (
+                  <div key={field.id} className="flex flex-col gap-1">
+                    <label htmlFor={`field-${field.id}`} className="text-sm font-medium text-gray-700">
+                      {field.label} {field.required !== false && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      id={`field-${field.id}`}
+                      type="datetime-local"
+                      required={field.required !== false}
+                      value={val}
+                      onChange={(e) => setFieldValue(field.id, e.target.value)}
+                      className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    />
+                  </div>
+                );
+              }
+
+              return (
+                <Input
+                  key={field.id}
+                  label={field.label}
+                  required={field.required !== false}
+                  value={val}
+                  onChange={(e) => setFieldValue(field.id, e.target.value)}
+                  placeholder={field.placeholder || `Tuliskan ${field.label.toLowerCase()}...`}
+                />
+              );
+            })}
           </div>
 
           <div className="border-b border-gray-100 pb-3 pt-2">

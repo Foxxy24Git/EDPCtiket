@@ -21,7 +21,253 @@
     "Vendor Lenovo",
     "PT Multipolar",
     "Vendor HP",
-    "PT Visionet",
-    "pt pt"
+    "PT Visionet"
+  ],
+  "deviceTypes": [
+    {
+      "id": "workstation",
+      "nama": "Workstation / Komputer",
+      "subtypes": [
+        "Desktop",
+        "All in One",
+        "Mini PC",
+        "Laptop"
+      ],
+      "customFields": [
+        {
+          "id": "cabang",
+          "label": "Cabang",
+          "type": "select",
+          "required": true,
+          "options": [
+            "PAYAKUMBUH",
+            "BUKITTINGGI",
+            "BATUSANGKAR",
+            "SOLOK",
+            "CABANG UTAMA"
+          ]
+        },
+        {
+          "id": "tanggalMasuk",
+          "label": "Tanggal Masuk",
+          "type": "date",
+          "required": true
+        },
+        {
+          "id": "noSurat",
+          "label": "Nomor Surat",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: SR/00/XX/XXX/00-2026"
+        },
+        {
+          "id": "merek",
+          "label": "Merek Perangkat",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Lenovo",
+            "HP",
+            "Dell",
+            "Acer",
+            "Asus",
+            "Apple",
+            "Fujitsu"
+          ]
+        },
+        {
+          "id": "capem",
+          "label": "Cabang Pembantu / Capem (opsional)",
+          "type": "text",
+          "required": false,
+          "placeholder": "cth: UNAND, dsb"
+        },
+        {
+          "id": "kelengkapan",
+          "label": "Kelengkapan",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: Adaptor, kabel, dus, dsb"
+        },
+        {
+          "id": "sn",
+          "label": "Serial Number (SN) Perangkat",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nomor seri mesin / perangkat..."
+        },
+        {
+          "id": "kerusakan",
+          "label": "Kerusakan",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "Jelaskan detail kerusakan..."
+        }
+      ]
+    },
+    {
+      "id": "edc",
+      "nama": "Mesin EDC",
+      "subtypes": [],
+      "customFields": [
+        {
+          "id": "cabang",
+          "label": "Cabang",
+          "type": "select",
+          "required": true,
+          "options": [
+            "PAYAKUMBUH",
+            "BUKITTINGGI",
+            "BATUSANGKAR",
+            "SOLOK",
+            "CABANG UTAMA"
+          ]
+        },
+        {
+          "id": "tanggalMasuk",
+          "label": "Tanggal Masuk",
+          "type": "date",
+          "required": true
+        },
+        {
+          "id": "noSurat",
+          "label": "Nomor Surat",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: SR/00/XX/XXX/00-2026"
+        },
+        {
+          "id": "merek",
+          "label": "Merek Perangkat",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Lenovo",
+            "HP",
+            "Dell",
+            "Acer",
+            "Asus",
+            "Apple",
+            "Fujitsu"
+          ]
+        },
+        {
+          "id": "capem",
+          "label": "Cabang Pembantu / Capem (opsional)",
+          "type": "text",
+          "required": false,
+          "placeholder": "cth: UNAND, dsb"
+        },
+        {
+          "id": "kelengkapan",
+          "label": "Kelengkapan",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: Adaptor, kabel, dus, dsb"
+        },
+        {
+          "id": "sn",
+          "label": "Serial Number (SN) Perangkat",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nomor seri mesin / perangkat..."
+        },
+        {
+          "id": "kerusakan",
+          "label": "Kerusakan",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "Jelaskan detail kerusakan..."
+        }
+      ]
+    },
+    {
+      "id": "router",
+      "nama": "Router",
+      "subtypes": [
+        "Tes"
+      ],
+      "customFields": [
+        {
+          "id": "cabang",
+          "label": "Cabang",
+          "type": "select",
+          "required": true,
+          "options": [
+            "PAYAKUMBUH",
+            "BUKITTINGGI",
+            "BATUSANGKAR",
+            "SOLOK",
+            "CABANG UTAMA"
+          ]
+        },
+        {
+          "id": "tanggalMasuk",
+          "label": "Tanggal Masuk",
+          "type": "date",
+          "required": true
+        },
+        {
+          "id": "noSurat",
+          "label": "Nomor Surat",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: SR/00/XX/XXX/00-2026"
+        },
+        {
+          "id": "capem",
+          "label": "Cabang Pembantu / Capem (opsional)",
+          "type": "text",
+          "required": false,
+          "placeholder": "cth: UNAND, dsb"
+        },
+        {
+          "id": "sn",
+          "label": "Serial Number (SN) Perangkat",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nomor seri mesin / perangkat..."
+        },
+        {
+          "id": "kelengkapan",
+          "label": "Kelengkapan",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: Adaptor, kabel, dus, dsb"
+        },
+        {
+          "id": "kerusakan",
+          "label": "Kerusakan",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "Jelaskan detail kerusakan..."
+        },
+        {
+          "id": "tes",
+          "label": "TES",
+          "type": "select",
+          "options": [
+            "TES1",
+            "TES2",
+            "TES3",
+            "TES4"
+          ],
+          "placeholder": "TES1",
+          "required": true
+        },
+        {
+          "id": "coba",
+          "label": "COBA",
+          "type": "select",
+          "options": [
+            "COBA1",
+            "COBA2",
+            "COBA3"
+          ],
+          "placeholder": "COBA",
+          "required": true
+        }
+      ]
+    }
   ]
 }

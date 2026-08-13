@@ -67,7 +67,10 @@ function CollapsibleNavItem({
   const visibleChildren = (item.children ?? []).filter(
     (c) => !c.roles || c.roles.includes(role)
   );
-  const isParentActive = pathname.startsWith(item.href + "/") || pathname === item.href;
+  const isParentActive =
+    visibleChildren.some((c) => pathname === c.href || pathname.startsWith(c.href + "/")) ||
+    pathname === item.href ||
+    pathname.startsWith(item.href + "/");
   const [open, setOpen] = useState(isParentActive);
 
   // Auto-expand bila route aktif berubah

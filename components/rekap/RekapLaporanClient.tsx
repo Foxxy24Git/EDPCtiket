@@ -181,7 +181,7 @@ function RekapLaporanContent({ today }: Props) {
 
     setBaForm({
       cabang: t.wsCabang || "Payakumbuh",
-      tgl: t.wsTanggalMasuk ? t.wsTanggalMasuk.split("T")[0] : today,
+      tgl: today,
       diserahkanOleh: t.ownerNama?.toUpperCase() || "DIMAS TEGUH PRIBADI",
       jabatanDiserahkan: "Staff Bagian Infrastruktur Divisi T&D",
       diterimaOleh: `Cabang ${t.wsCabang || 'Payakumbuh'}`,
@@ -229,18 +229,28 @@ function RekapLaporanContent({ today }: Props) {
       const raw = d.merekKomputer || foundTicket?.wsMerekKomputer || d.namaPerangkat || "";
 
       let cat = "Komputer";
-      if (/edc/i.test(raw)) {
+
+      if (raw.startsWith("[")) {
+        const match = /^\[([^\]]+)\]/.exec(raw);
+        if (match) {
+          cat = match[1].trim().replace(/\s*-\s*/g, " ");
+        }
+      } else if (/edc/i.test(raw)) {
         cat = "Mesin EDC";
+      } else if (/router/i.test(raw)) {
+        cat = "Router";
+      } else if (/atm/i.test(raw)) {
+        cat = "ATM";
       } else if (/desktop/i.test(raw)) {
-        cat = "Komputer - Desktop";
+        cat = "Komputer Desktop";
       } else if (/mini pc/i.test(raw)) {
-        cat = "Komputer - Mini PC";
+        cat = "Komputer Mini PC";
       } else if (/laptop/i.test(raw)) {
-        cat = "Komputer - Laptop";
+        cat = "Komputer Laptop";
       } else if (/all in one|all-in-one|aio/i.test(raw)) {
         cat = "Komputer All in One";
       } else {
-        cat = "Komputer";
+        cat = d.namaPerangkat || "Komputer";
       }
 
       counts[cat] = (counts[cat] || 0) + 1;

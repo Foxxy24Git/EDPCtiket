@@ -101,7 +101,7 @@ export function SupervisiClient({ initialTickets }: Props) {
                   <Th>No Tiket</Th>
                   <Th>Cabang</Th>
                   <Th>Tanggal Masuk</Th>
-                  <Th>Merek Komputer</Th>
+                  <Th>Merek Perangkat</Th>
                   <Th>Status</Th>
                 </TableRow>
               </TableHead>

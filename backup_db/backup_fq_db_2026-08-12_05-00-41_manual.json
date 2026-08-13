@@ -1,0 +1,658 @@
+{
+  "meta": {
+    "appName": "EDPCtiket Bank Nagari",
+    "backupDate": "2026-08-12T05:00:41.848Z",
+    "version": "1.0",
+    "tables": {
+      "users": 10,
+      "workstationMaster": 34,
+      "tickets": 0,
+      "ticketActivities": 0,
+      "serverAccessLog": 20
+    }
+  },
+  "data": {
+    "users": [
+      {
+        "id": "cmso7dlaw0002unccpx5ecpk0",
+        "username": "pakde",
+        "nama": "Rian Islami",
+        "role": "user",
+        "passwordHash": "$2b$10$pFjc5p.ZPW6CbVpqa9bYb.niNOl/CBeJ1TKVq9ZEPtNVfGrluoL2W",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.193Z"
+      },
+      {
+        "id": "cmso7dlca0003unccx814bldt",
+        "username": "kurnia",
+        "nama": "Kurnia Fajri",
+        "role": "user",
+        "passwordHash": "$2b$10$jVUgSZ9nhJPj98/dt4.Dc.KMH1MTbo88W.WIBVxOhjOAGsBMgo9eW",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.242Z"
+      },
+      {
+        "id": "cmso7dl7u0000uncc5qtqlthp",
+        "username": "mtr1",
+        "nama": "Afrinaldi",
+        "role": "user",
+        "passwordHash": "$2b$10$lfKzjn97HHimCNykAyuWQ.5BuJKHe6qydMZpIfgSm8YJkUPh8M4Se",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.081Z"
+      },
+      {
+        "id": "cmso7dl9h0001unccgemhryz8",
+        "username": "mtr2",
+        "nama": "Rian Islami Putra",
+        "role": "user",
+        "passwordHash": "$2b$10$bQyGoLbkytjrCnbLmZjZW.fHkgbFpXXUdMvzdfWRwRptcwSZt3.My",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.142Z"
+      },
+      {
+        "id": "cmsobylvs0002qz69wgk07h4c",
+        "username": "mtr3",
+        "nama": "Kurnia Fajri",
+        "role": "user",
+        "passwordHash": "$2b$10$0vWpPojYSrZtMrokCopWxO16.MoUDxGXN8CqvJ/LVHiXQmZ8Fjbqa",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.185Z"
+      },
+      {
+        "id": "cmsobylxc0003qz691trhvr2q",
+        "username": "mtr4",
+        "nama": "Ibnu Sauki",
+        "role": "user",
+        "passwordHash": "$2b$10$dlG83U68.8d5qy8pCYNTEORmedLJ.3ENyl3FXOXPjbtHFdxo75fF2",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.240Z"
+      },
+      {
+        "id": "cmsobylys0004qz6917jety4w",
+        "username": "mtr5",
+        "nama": "Ridho M R",
+        "role": "user",
+        "passwordHash": "$2b$10$kVO/30o.k7K1ZDnWgGDuSutQLodJlHA9foDr9e4wqXOV9YaUi4uBC",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.293Z"
+      },
+      {
+        "id": "cmso7dlf30005unccw3by9uur",
+        "username": "superadmin",
+        "nama": "Super Admin",
+        "role": "superadmin",
+        "passwordHash": "$2b$10$KrXZVx8xci4ekGamCgrZ0enW9iYhrgT8AY06AXoCucW1wH9zDNh4e",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.344Z"
+      },
+      {
+        "id": "cmsobym1u0006qz69a9ui1rfc",
+        "username": "tio",
+        "nama": "Tio Rahmayunda",
+        "role": "supervisi",
+        "passwordHash": "$2b$10$fPyhY.hYzYPzGxjQulhi5u6gxCuKaT/OCEFv5ibpDVBrTNOLp98ci",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.402Z"
+      },
+      {
+        "id": "cmso7dldo0004uncc108fj5ry",
+        "username": "berto",
+        "nama": "Berto L",
+        "role": "supervisi",
+        "passwordHash": "$2b$10$ZoFF48YY1D.kvh6qIsyPDOZEkDZjG.xucTysCCpYBiNXJw50PyHli",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.293Z"
+      }
+    ],
+    "workstationMaster": [
+      {
+        "id": "cmso7dlf90006unccz2wj80wc",
+        "namaCabang": "PAYAKUMBUH",
+        "kodeKantor": "0100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfc0007unccnfduueds",
+        "namaCabang": "BUKITTINGGI",
+        "kodeKantor": "0200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfe0008unccs79ibqig",
+        "namaCabang": "BATUSANGKAR",
+        "kodeKantor": "0300",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfg0009uncc1s2ahd88",
+        "namaCabang": "SOLOK",
+        "kodeKantor": "0600",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfi000aunccmznjdyqr",
+        "namaCabang": "PARIAMAN",
+        "kodeKantor": "0500",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfk000buncctgbe6ta8",
+        "namaCabang": "PAINAN",
+        "kodeKantor": "0400",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfl000cuncco24d1udj",
+        "namaCabang": "SIJUNJUNG",
+        "kodeKantor": "0700",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfo000dunccbafvx1to",
+        "namaCabang": "LUBUK SIKAPING",
+        "kodeKantor": "0800",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfr000eunccoqmhqixv",
+        "namaCabang": "PASAR RAYA",
+        "kodeKantor": "1000",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlft000funccxx7nw2qg",
+        "namaCabang": "SITEBA",
+        "kodeKantor": "1005",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfv000guncc0aaiq10h",
+        "namaCabang": "SAWAHLUNTO",
+        "kodeKantor": "1100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfw000hunccgg9qtkxr",
+        "namaCabang": "SIMPANG EMPAT",
+        "kodeKantor": "1200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfy000iunccrp17pm2j",
+        "namaCabang": "MUARA LABUH",
+        "kodeKantor": "1300",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg0000juncc5l6md73s",
+        "namaCabang": "LUBUK GADANG",
+        "kodeKantor": "1301",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg1000kuncc9ulaggkx",
+        "namaCabang": "KOTO BARU",
+        "kodeKantor": "1400",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg2000luncc815fsnj9",
+        "namaCabang": "PULAU PUNJUNG",
+        "kodeKantor": "1403",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg4000munccez46fjpj",
+        "namaCabang": "UJUNG GADING",
+        "kodeKantor": "1500",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg5000nunccdd0sojj8",
+        "namaCabang": "LUBUK BASUNG",
+        "kodeKantor": "1600",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg7000ouncc642ud5xy",
+        "namaCabang": "LUBUK ALUNG",
+        "kodeKantor": "1700",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg8000punccyzhsso8h",
+        "namaCabang": "TAPAN",
+        "kodeKantor": "1900",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlga000quncc6apqdtg0",
+        "namaCabang": "LINTAU",
+        "kodeKantor": "2000",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgb000runccdn98bjha",
+        "namaCabang": "CABANG UTAMA",
+        "kodeKantor": "2100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgd000suncce6zyht55",
+        "namaCabang": "MENTAWAI",
+        "kodeKantor": "2110",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlge000tunccn305lf46",
+        "namaCabang": "TAPUS",
+        "kodeKantor": "2200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgf000uuncc3u4ax9ew",
+        "namaCabang": "ALAHAN PANJANG",
+        "kodeKantor": "2300",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgh000vunccb1yv8t01",
+        "namaCabang": "JAKARTA",
+        "kodeKantor": "2400",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgi000wuncc8nnkzrus",
+        "namaCabang": "PEKANBARU",
+        "kodeKantor": "2500",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgk000xunccgbn77etx",
+        "namaCabang": "BANDUNG",
+        "kodeKantor": "2600",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgl000yunccghe21lpx",
+        "namaCabang": "SYARIAH PADANG",
+        "kodeKantor": "7100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgm000zuncc0svoxser",
+        "namaCabang": "SYARIAH SOLOK",
+        "kodeKantor": "7202",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgo0010uncc5xqfq7uy",
+        "namaCabang": "SYARIAH PAYAKUMBUH",
+        "kodeKantor": "7200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgp0011uncct1iazour",
+        "namaCabang": "SYARIAH BUKITTINGGI",
+        "kodeKantor": "7201",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgr0012uncc2citx435",
+        "namaCabang": "SYARIAH BATUSANGKAR",
+        "kodeKantor": "7203",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgs0013unccihcyhu4f",
+        "namaCabang": "PADANG PANJANG",
+        "kodeKantor": "0900",
+        "lokasiKantor": null
+      }
+    ],
+    "tickets": [],
+    "ticketActivities": [],
+    "serverAccessLog": [
+      {
+        "id": "cmso7dlgx0014uncco9o939mi",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-11T03:11:35.407Z",
+        "waktuKeluar": "2026-08-11T04:41:35.407Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dl7u0000uncc5qtqlthp",
+        "statusApproval": "approved",
+        "approvedBy": "cmso7dldo0004uncc108fj5ry",
+        "createdAt": "2026-08-11T05:11:35.410Z"
+      },
+      {
+        "id": "cmso7dlgx0015uncc604m0yuu",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-11T04:26:35.407Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dl7u0000uncc5qtqlthp",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-11T05:11:35.410Z"
+      },
+      {
+        "id": "cmsobym530008qz69uuj2pkvx",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-11T05:19:54.519Z",
+        "waktuKeluar": "2026-08-11T06:49:54.519Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-11T07:19:54.520Z"
+      },
+      {
+        "id": "cmsobym530009qz699msy7kmg",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-11T06:34:54.519Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-11T07:19:54.520Z"
+      },
+      {
+        "id": "cmsobz7nh0008une4a61dydzt",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-11T05:20:22.396Z",
+        "waktuKeluar": "2026-08-11T06:50:22.396Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-11T07:20:22.398Z"
+      },
+      {
+        "id": "cmsobz7ni0009une4xbkfade9",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-11T06:35:22.396Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-11T07:20:22.398Z"
+      },
+      {
+        "id": "cmspibq900008qz694itfnpik",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T01:05:50.243Z",
+        "waktuKeluar": "2026-08-12T02:35:50.243Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-12T03:05:50.244Z"
+      },
+      {
+        "id": "cmspibq900009qz69iupz3mgn",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T02:20:50.243Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-12T03:05:50.244Z"
+      },
+      {
+        "id": "cmspjtu090008o369p9ab7ksi",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T01:47:54.536Z",
+        "waktuKeluar": "2026-08-12T03:17:54.536Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-12T03:47:54.537Z"
+      },
+      {
+        "id": "cmspjtu090009o3693yx1yck8",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T03:02:54.536Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-12T03:47:54.537Z"
+      },
+      {
+        "id": "cmspjxzry0008unssnk8j7jtu",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T01:51:08.631Z",
+        "waktuKeluar": "2026-08-12T03:21:08.631Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-12T03:51:08.638Z"
+      },
+      {
+        "id": "cmspjxzry0009unssrqruvw0o",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T03:06:08.631Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-12T03:51:08.638Z"
+      },
+      {
+        "id": "cmspl8arh0008mw69a2054q6m",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T02:27:09.052Z",
+        "waktuKeluar": "2026-08-12T03:57:09.052Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-12T04:27:09.053Z"
+      },
+      {
+        "id": "cmspl8arh0009mw69tvg7tpqr",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T03:42:09.052Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-12T04:27:09.053Z"
+      },
+      {
+        "id": "cmspl9nyj0008jz6ajtrva8xu",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T02:28:12.810Z",
+        "waktuKeluar": "2026-08-12T03:58:12.810Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-12T04:28:12.811Z"
+      },
+      {
+        "id": "cmspl9nyj0009jz6augmg3xsz",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T03:43:12.810Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-12T04:28:12.811Z"
+      },
+      {
+        "id": "cmsplyz110008o4698opmctwk",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T02:47:53.556Z",
+        "waktuKeluar": "2026-08-12T04:17:53.556Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-12T04:47:53.557Z"
+      },
+      {
+        "id": "cmsplyz110009o469zqha9ucc",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T04:02:53.556Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-12T04:47:53.557Z"
+      },
+      {
+        "id": "cmspmdzv20008o5695iaeznt8",
+        "namaOrang": "Hendra Wijaya (Teknisi PLN)",
+        "instansi": "PT. PLN (Persero)",
+        "namaPic": "RUDI HARNO FAZLUR RAHMAN",
+        "keperluan": "Maintenance Panel Listrik & UPS Server Room",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T02:59:34.478Z",
+        "waktuKeluar": "2026-08-12T04:29:34.478Z",
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "approved",
+        "approvedBy": "cmsobym1u0006qz69a9ui1rfc",
+        "createdAt": "2026-08-12T04:59:34.479Z"
+      },
+      {
+        "id": "cmspmdzv20009o5691cji54da",
+        "namaOrang": "Budi Pratama (Vendor AC)",
+        "instansi": "PT. Cold Tech Indonesia",
+        "namaPic": "DIMAS TEGUH PRIBADI",
+        "keperluan": "Pengecekan Freon & Pembersihan AC Precision Server",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-12T04:14:34.478Z",
+        "waktuKeluar": null,
+        "fotoUrl": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDABALDA4MChAODQ4SERATGCgaGBYWGDEjJR0oOJM9PDkeODFDZCORQGQzOkjDxub78gAAAAAA",
+        "ttdUrl": null,
+        "catatanOleh": "cmso7dlaw0002unccpx5ecpk0",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-12T04:59:34.479Z"
+      }
+    ]
+  }
+}

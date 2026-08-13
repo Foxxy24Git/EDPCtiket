@@ -9,6 +9,8 @@ import {
   FolderOpen,
   MapPin,
   ServerCog,
+  Database,
+  Cpu,
   type LucideIcon,
 } from "lucide-react";
 import type { Role } from "@/lib/roles";
@@ -70,10 +72,24 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Master",
-    href: "/master-cabang",
+    href: "/master-perangkat",
     icon: MapPin,
-    description: "Master data cabang Bank Nagari",
+    description: "Master data cabang & perangkat Bank Nagari",
     roles: ["superadmin"],
+    children: [
+      {
+        label: "Master Perangkat",
+        href: "/master-perangkat",
+        icon: Cpu,
+        description: "Kelola jenis perangkat, sub-tipe & kustomisasi form builder",
+      },
+      {
+        label: "Master Opsi",
+        href: "/master-cabang",
+        icon: MapPin,
+        description: "Kelola data cabang, merek hardware & vendor perbaikan",
+      },
+    ],
   },
   {
     label: "Manajemen Akun",
@@ -88,6 +104,13 @@ export const NAV_ITEMS: NavItem[] = [
     icon: ServerCog,
     description: "Monitoring akses keluar masuk ruang server",
     roles: ["user", "superadmin", "supervisi"],
+  },
+  {
+    label: "Backup Database",
+    href: "/setting?tab=backup",
+    icon: Database,
+    description: "Pemeliharaan & unduh backup database",
+    roles: ["superadmin"],
   },
   {
     label: "Setting",

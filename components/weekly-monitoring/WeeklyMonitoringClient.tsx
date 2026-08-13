@@ -155,8 +155,8 @@ export function WeeklyMonitoringClient({
                 <TableRow>
                   <Th>No Tiket</Th>
                   <Th>Cabang</Th>
-                  <Th>Merek Komputer</Th>
-                  <Th>SN Komputer</Th>
+                  <Th>Merek Perangkat</Th>
+                  <Th>SN Perangkat</Th>
                   <Th>Tanggal Masuk</Th>
                   <Th>Kerusakan</Th>
                   <Th>Vendor</Th>

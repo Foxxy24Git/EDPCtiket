@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import { UserCircle, KeyRound, ImageIcon, Database } from "lucide-react";
 import { cn } from "@/lib/cn";
@@ -23,8 +24,9 @@ interface Props {
 }
 
 export function SettingClient({ me, logoUrl }: Props) {
-  // Manajemen akun kini halaman tersendiri (/manajemen-akun, PRD §3).
-  // Tab Logo Aplikasi & Backup Database hanya untuk Super Admin (pengaturan global).
+  const searchParams = useSearchParams();
+  const initialTab = searchParams.get("tab") || "profil";
+
   const tabs = [
     { key: "profil", label: "Profil", icon: UserCircle },
     { key: "password", label: "Keamanan", icon: KeyRound },
@@ -36,7 +38,16 @@ export function SettingClient({ me, logoUrl }: Props) {
       : []),
   ] as const;
 
-  const [active, setActive] = useState<(typeof tabs)[number]["key"]>("profil");
+  const [active, setActive] = useState<string>(
+    tabs.some((t) => t.key === initialTab) ? initialTab : "profil"
+  );
+
+  useEffect(() => {
+    const tabParam = searchParams.get("tab");
+    if (tabParam && tabs.some((t) => t.key === tabParam)) {
+      setActive(tabParam);
+    }
+  }, [searchParams]);
 
   return (
     <div>

@@ -128,17 +128,23 @@ export async function getDashboardData(): Promise<DashboardData> {
     .sort((a, b) => b.count - a.count)
     .slice(0, 8);
 
-  // Brand & Device stats (Komputer vs Mesin EDC)
+  // Brand & Device stats (Format: [Merek] - [Jenis Perangkat])
   const brandMap = new Map<string, number>();
   for (const t of allTickets) {
     if (t.wsMerekKomputer) {
       const raw = t.wsMerekKomputer.trim();
       let label = raw;
-      if (raw.startsWith("[EDC]")) {
-        label = "Mesin EDC";
-      } else if (raw.includes("]")) {
-        const afterBracket = raw.split("]")[1]?.trim();
-        label = afterBracket || "Komputer";
+      if (raw.startsWith("[")) {
+        const match = /^\[([^\]]+)\]\s*(.*)$/.exec(raw);
+        if (match) {
+          const typePart = match[1].split("-")[0].trim();
+          const brandPart = match[2].trim();
+          if (brandPart) {
+            label = `${brandPart} - ${typePart}`;
+          } else {
+            label = typePart;
+          }
+        }
       }
       brandMap.set(label, (brandMap.get(label) ?? 0) + 1);
     }

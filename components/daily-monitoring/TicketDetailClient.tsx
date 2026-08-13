@@ -209,6 +209,9 @@ export function TicketDetailClient({
   async function handleSendToCabang(e: React.FormEvent) {
     e.preventDefault();
     setCabangErr("");
+    if (isSentToVendor) {
+      return setCabangErr("Perangkat saat ini sedang berada di Vendor. Silakan tekan 'Terima dari Vendor' terlebih dahulu!");
+    }
     if (!picTerimaInput.trim()) return setCabangErr("Nama PIC Penerima wajib diisi.");
     setCabangSaving(true);
     try {
@@ -378,9 +381,9 @@ export function TicketDetailClient({
                   setVendorReturnErr("");
                   setVendorReturnModalOpen(true);
                 }}
-                className="border-orange-600 text-orange-700 hover:bg-orange-50"
+                className="border-orange-600 text-orange-700 hover:bg-orange-50 font-bold"
               >
-                <CornerDownLeft className="w-4 h-4 text-orange-600" /> Pengembalian dari Vendor
+                <CornerDownLeft className="w-4 h-4 text-orange-600" /> Terima dari Vendor
               </Button>
             )}
 
@@ -388,11 +391,25 @@ export function TicketDetailClient({
             <Button
               variant="outline"
               size="sm"
+              disabled={isSentToVendor}
               onClick={() => {
+                if (isSentToVendor) {
+                  alert("Perangkat saat ini sedang di-servis di Vendor! Silakan tekan tombol 'Terima dari Vendor' terlebih dahulu sebelum melakukan penyerahan ke cabang.");
+                  return;
+                }
                 setCabangErr("");
                 setCabangModalOpen(true);
               }}
-              className="border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+              className={
+                isSentToVendor
+                  ? "border-gray-300 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed"
+                  : "border-emerald-600 text-emerald-700 hover:bg-emerald-50"
+              }
+              title={
+                isSentToVendor
+                  ? "Perangkat sedang di Vendor. Harus 'Terima dari Vendor' dulu!"
+                  : "Penyerahan Perangkat ke Cabang"
+              }
             >
               <Building className="w-4 h-4 text-emerald-600" /> Penyerahan ke Cabang
             </Button>

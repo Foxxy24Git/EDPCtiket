@@ -73,9 +73,9 @@ export default async function MasterCabangPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="page-title">Master</h1>
+        <h1 className="page-title">Master Opsi</h1>
         <p className="page-subtitle">
-          Kelola data master cabang Bank Nagari untuk referensi penginputan tiket workstation (CRUD).
+          Kelola data cabang Bank Nagari, daftar merek hardware, dan vendor perbaikan perbaikan (CRUD).
         </p>
       </div>
       <MasterCabangClient initialBranches={branches} />
