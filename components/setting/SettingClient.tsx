@@ -3,13 +3,12 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
-import { UserCircle, KeyRound, ImageIcon, Database } from "lucide-react";
+import { UserCircle, KeyRound, ImageIcon } from "lucide-react";
 import { cn } from "@/lib/cn";
 import type { Role } from "@/lib/roles";
 import { ProfilSection } from "@/components/setting/ProfilSection";
 import { PasswordSection } from "@/components/setting/PasswordSection";
 import { LogoSection } from "@/components/setting/LogoSection";
-import { BackupSection } from "@/components/setting/BackupSection";
 
 interface Props {
   me: {
@@ -31,10 +30,7 @@ export function SettingClient({ me, logoUrl }: Props) {
     { key: "profil", label: "Profil", icon: UserCircle },
     { key: "password", label: "Keamanan", icon: KeyRound },
     ...(me.role === "superadmin"
-      ? ([
-          { key: "logo", label: "Logo Aplikasi", icon: ImageIcon },
-          { key: "backup", label: "Backup Database", icon: Database },
-        ] as const)
+      ? ([{ key: "logo", label: "Logo Aplikasi", icon: ImageIcon }] as const)
       : []),
   ] as const;
 
@@ -53,7 +49,7 @@ export function SettingClient({ me, logoUrl }: Props) {
     <div>
       <div className="mb-6">
         <h1 className="page-title">Setting</h1>
-        <p className="page-subtitle">Kelola profil, keamanan akun, dan pemeliharaan database.</p>
+        <p className="page-subtitle">Kelola profil, keamanan akun, dan logo aplikasi.</p>
       </div>
 
       {/* Tabs */}
@@ -106,7 +102,6 @@ export function SettingClient({ me, logoUrl }: Props) {
         {active === "logo" && me.role === "superadmin" && (
           <LogoSection currentLogoUrl={logoUrl} />
         )}
-        {active === "backup" && me.role === "superadmin" && <BackupSection />}
       </motion.div>
     </div>
   );

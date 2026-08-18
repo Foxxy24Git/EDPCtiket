@@ -107,7 +107,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     label: "Backup Database",
-    href: "/setting?tab=backup",
+    href: "/backup-database",
     icon: Database,
     description: "Pemeliharaan & unduh backup database",
     roles: ["superadmin"],

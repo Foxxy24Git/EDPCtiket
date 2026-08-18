@@ -15,6 +15,9 @@ export async function GET(req: Request) {
   if (!session) {
     return NextResponse.json({ error: "Tidak terautentikasi." }, { status: 401 });
   }
+  if (session.role !== "superadmin") {
+    return NextResponse.json({ error: "Hanya Super Admin yang dapat mengakses backup database." }, { status: 403 });
+  }
 
   // Jalankan pengecekan backup bulanan secara pasif setiap ada request GET
   await checkAndRunMonthlyAutoBackup().catch(() => {});

@@ -15,6 +15,7 @@ import {
   CornerDownLeft,
   Building,
   Info,
+  Edit3,
 } from "lucide-react";
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -47,8 +48,8 @@ export function TicketDetailClient({
 
   const canMutate =
     !readOnly &&
-    role === "user" &&
-    (ticket.ownerId === currentUserId || !ticket.ownerId);
+    (role === "user" || role === "superadmin") &&
+    (ticket.ownerId === currentUserId || !ticket.ownerId || role === "superadmin");
 
   const isSelesai = ticket.status === "selesai";
 
@@ -59,6 +60,22 @@ export function TicketDetailClient({
 
   // State Modal Detail (Read-Only)
   const [detailModalOpen, setDetailModalOpen] = useState(false);
+
+  // State Modal Edit Tiket Input Awal
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editErr, setEditErr] = useState("");
+  const [editNoSurat, setEditNoSurat] = useState("");
+  const [editSn, setEditSn] = useState("");
+  const [editCabang, setEditCabang] = useState("");
+  const [editCapem, setEditCapem] = useState("");
+  const [editTglMasuk, setEditTglMasuk] = useState("");
+  const [editMerek, setEditMerek] = useState("");
+  const [editKelengkapan, setEditKelengkapan] = useState("");
+  const [editKerusakan, setEditKerusakan] = useState("");
+  const [editCpTipe, setEditCpTipe] = useState<"pic" | "wag">("pic");
+  const [editCpNama, setEditCpNama] = useState("");
+  const [editCpTelp, setEditCpTelp] = useState("");
 
   // State Penyerahan ke Vendor Modal
   const [vendorModalOpen, setVendorModalOpen] = useState(false);
@@ -140,6 +157,50 @@ export function TicketDetailClient({
       setKegiatanErr("Terjadi kesalahan jaringan.");
     } finally {
       setSavingKegiatan(false);
+    }
+  }
+
+  async function handleSaveEdit(e: React.FormEvent) {
+    e.preventDefault();
+    setEditErr("");
+    if (!editCabang.trim()) return setEditErr("Cabang wajib diisi.");
+    if (!editNoSurat.trim()) return setEditErr("Nomor surat wajib diisi.");
+    if (!editMerek.trim()) return setEditErr("Merek / Jenis Perangkat wajib diisi.");
+    if (!editSn.trim()) return setEditErr("Serial Number (SN) wajib diisi.");
+    if (!editKerusakan.trim()) return setEditErr("Kerusakan wajib diisi.");
+
+    setEditSaving(true);
+    try {
+      const res = await fetch(`/api/tickets/${ticket.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          wsCabang: editCabang.trim(),
+          wsCapem: editCapem.trim() || null,
+          wsNoSurat: editNoSurat.trim(),
+          wsMerekKomputer: editMerek.trim(),
+          wsSnKomputer: editSn.trim(),
+          wsKelengkapan: editKelengkapan.trim(),
+          wsKerusakan: editKerusakan.trim(),
+          wsTanggalMasuk: editTglMasuk ? new Date(editTglMasuk).toISOString() : undefined,
+          cpTipe: editCpTipe,
+          cpNama: editCpNama.trim(),
+          cpTelp: editCpTelp.trim() || null,
+          activityText: `Memperbarui rincian data tiket (${editNoSurat.trim()} / SN: ${editSn.trim()})`,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setEditErr(data.error ?? "Gagal menyimpan perubahan tiket.");
+        return;
+      }
+      setEditModalOpen(false);
+      await reload();
+    } catch {
+      setEditErr("Terjadi kesalahan jaringan saat menyimpan perubahan.");
+    } finally {
+      setEditSaving(false);
     }
   }
 
@@ -358,6 +419,34 @@ export function TicketDetailClient({
             {/* Tombol Detail (Read-Only) */}
             <Button variant="outline" size="sm" onClick={() => setDetailModalOpen(true)}>
               <Info className="w-4 h-4 text-gray-600" /> Detail
+            </Button>
+
+            {/* Tombol Edit Tiket */}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setEditErr("");
+                setEditNoSurat(ticket.wsNoSurat || "");
+                setEditSn(ticket.wsSnKomputer || "");
+                setEditCabang(ticket.wsCabang || "");
+                setEditCapem(ticket.wsCapem || "");
+                setEditTglMasuk(
+                  ticket.wsTanggalMasuk
+                    ? new Date(ticket.wsTanggalMasuk).toISOString().slice(0, 10)
+                    : ""
+                );
+                setEditMerek(ticket.wsMerekKomputer || "");
+                setEditKelengkapan(ticket.wsKelengkapan || "");
+                setEditKerusakan(ticket.wsKerusakan || "");
+                setEditCpTipe((ticket.cpTipe as "pic" | "wag") || "pic");
+                setEditCpNama(ticket.cpNama || "");
+                setEditCpTelp(ticket.cpTelp || "");
+                setEditModalOpen(true);
+              }}
+              className="border-indigo-600 text-indigo-700 hover:bg-indigo-50"
+            >
+              <Edit3 className="w-4 h-4 text-indigo-600" /> Edit Tiket
             </Button>
 
             {/* Tombol Vendor Dynamically Toggle */}
@@ -705,6 +794,130 @@ export function TicketDetailClient({
             </Button>
             <Button type="submit" loading={cabangSaving} className="bg-emerald-600 hover:bg-emerald-700 text-white">
               <Building className="w-4 h-4 mr-1" /> Simpan Penyerahan Cabang
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* ---- MODAL EDIT TIKET INPUT AWAL ---- */}
+      <Modal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        title="Edit Data Tiket (Input Awal)"
+        size="lg"
+      >
+        <form onSubmit={handleSaveEdit} className="space-y-4">
+          <p className="text-xs text-gray-500">
+            Edit informasi awal tiket seperti Nomor Surat, Serial Number, Cabang, Merek, dan Kerusakan. 
+            Nomor Tiket <span className="font-mono font-bold text-gray-800">{ticket.noTiket}</span> tidak dapat diubah.
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Input
+              label="Cabang"
+              required
+              value={editCabang}
+              onChange={(e) => setEditCabang(e.target.value)}
+              placeholder="cth: PAYAKUMBUH"
+            />
+            <Input
+              label="Capem (opsional)"
+              value={editCapem}
+              onChange={(e) => setEditCapem(e.target.value)}
+              placeholder="cth: UNAND"
+            />
+            <Input
+              label="Nomor Surat"
+              required
+              value={editNoSurat}
+              onChange={(e) => setEditNoSurat(e.target.value)}
+              placeholder="cth: SR/00/XX/XXX/00-2026"
+            />
+            <Input
+              label="Tanggal Masuk IT"
+              type="date"
+              required
+              value={editTglMasuk}
+              onChange={(e) => setEditTglMasuk(e.target.value)}
+            />
+            <Input
+              label="Merek / Jenis Perangkat"
+              required
+              value={editMerek}
+              onChange={(e) => setEditMerek(e.target.value)}
+              placeholder="cth: [Workstation - Laptop] Lenovo"
+            />
+            <Input
+              label="Serial Number (SN)"
+              required
+              value={editSn}
+              onChange={(e) => setEditSn(e.target.value)}
+              placeholder="Nomor Seri / SN..."
+            />
+            <div className="sm:col-span-2">
+              <Input
+                label="Kelengkapan"
+                required
+                value={editKelengkapan}
+                onChange={(e) => setEditKelengkapan(e.target.value)}
+                placeholder="cth: Kabel power, adaptor, dus, dll"
+              />
+            </div>
+            <div className="sm:col-span-2 flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Detail Kerusakan <span className="text-red-500">*</span></label>
+              <textarea
+                rows={3}
+                required
+                value={editKerusakan}
+                onChange={(e) => setEditKerusakan(e.target.value)}
+                placeholder="Jelaskan detail kerusakan..."
+                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+              />
+            </div>
+
+            <div className="sm:col-span-2 border-t border-gray-100 pt-3 mt-1">
+              <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Informasi Pelapor / Contact Person</h5>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-medium text-gray-700">Tipe Pelapor</label>
+                  <select
+                    value={editCpTipe}
+                    onChange={(e) => setEditCpTipe(e.target.value as "pic" | "wag")}
+                    className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                  >
+                    <option value="pic">PIC Cabang</option>
+                    <option value="wag">Grup WhatsApp (WAG)</option>
+                  </select>
+                </div>
+                <Input
+                  label="Nama Pelapor"
+                  required
+                  value={editCpNama}
+                  onChange={(e) => setEditCpNama(e.target.value)}
+                  placeholder="Nama PIC / WAG..."
+                />
+                <Input
+                  label="No Telepon / WA"
+                  value={editCpTelp}
+                  onChange={(e) => setEditCpTelp(e.target.value)}
+                  placeholder="08xxxxxxxxxx"
+                />
+              </div>
+            </div>
+          </div>
+
+          {editErr && (
+            <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+              {editErr}
+            </p>
+          )}
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+            <Button type="button" variant="secondary" onClick={() => setEditModalOpen(false)}>
+              Batal
+            </Button>
+            <Button type="submit" loading={editSaving} className="bg-indigo-600 hover:bg-indigo-700 text-white">
+              <Edit3 className="w-4 h-4 mr-1" /> Simpan Perubahan
             </Button>
           </div>
         </form>
