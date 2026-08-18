@@ -262,9 +262,92 @@
           "options": [
             "COBA1",
             "COBA2",
-            "COBA3"
+            "COBA3",
+            "COBA4"
           ],
           "placeholder": "COBA",
+          "required": true
+        }
+      ]
+    },
+    {
+      "id": "atm",
+      "nama": "atm",
+      "subtypes": [],
+      "customFields": [
+        {
+          "id": "cabang",
+          "label": "Cabang",
+          "type": "select",
+          "required": true,
+          "options": [
+            "PAYAKUMBUH",
+            "BUKITTINGGI",
+            "BATUSANGKAR",
+            "SOLOK",
+            "CABANG UTAMA"
+          ]
+        },
+        {
+          "id": "tanggalMasuk",
+          "label": "Tanggal Masuk",
+          "type": "date",
+          "required": true
+        },
+        {
+          "id": "noSurat",
+          "label": "Nomor Surat",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: SR/00/XX/XXX/00-2026"
+        },
+        {
+          "id": "merek",
+          "label": "Merek Perangkat",
+          "type": "select",
+          "required": true,
+          "options": [
+            "Lenovo",
+            "HP",
+            "Dell",
+            "Acer",
+            "Asus",
+            "Apple",
+            "Fujitsu"
+          ]
+        },
+        {
+          "id": "capem",
+          "label": "Cabang Pembantu / Capem (opsional)",
+          "type": "text",
+          "required": false,
+          "placeholder": "cth: UNAND, dsb"
+        },
+        {
+          "id": "kelengkapan",
+          "label": "Kelengkapan",
+          "type": "text",
+          "required": true,
+          "placeholder": "cth: Adaptor, kabel, dus, dsb"
+        },
+        {
+          "id": "sn",
+          "label": "Serial Number (SN) Perangkat",
+          "type": "text",
+          "required": true,
+          "placeholder": "Nomor seri mesin / perangkat..."
+        },
+        {
+          "id": "kerusakan",
+          "label": "Kerusakan",
+          "type": "textarea",
+          "required": true,
+          "placeholder": "Jelaskan detail kerusakan..."
+        },
+        {
+          "id": "ip_addres",
+          "label": "ip addres",
+          "type": "text",
           "required": true
         }
       ]

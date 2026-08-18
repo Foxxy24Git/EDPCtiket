@@ -203,9 +203,14 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
 
   // Hitung Merek Komputer/Perangkat final string
   function getFormattedMerek(): string {
+    const activeDeviceObj = deviceTypesList.find((d) => d.id === selectedDeviceId) || deviceTypesList[0];
     const devName = activeDeviceObj ? activeDeviceObj.nama.replace(/\s*\/\s*Komputer/i, "") : "Perangkat";
-    const brand = merekPilihan.trim();
     
+    if (selectedDeviceId === "edc") {
+      return `[${devName}]`;
+    }
+
+    const brand = merekPilihan.trim();
     if (selectedSubtype) {
       return brand ? `[${devName} - ${selectedSubtype}] ${brand}` : `[${devName} - ${selectedSubtype}]`;
     }
@@ -220,6 +225,9 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
 
     // Validasi input wajib dari activeFields
     for (const field of activeFields) {
+      if (field.id === "merek" && selectedDeviceId === "edc") {
+        continue;
+      }
       if (field.required !== false && field.id !== "capem") {
         const val = getFieldValue(field.id);
         if (!val || !val.trim()) {
@@ -434,11 +442,11 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
               }
 
               if (field.id === "merek") {
+                if (selectedDeviceId === "edc") return null;
+
                 const rawOpts =
                   field.options && field.options.length > 0
                     ? field.options
-                    : selectedDeviceId === "edc"
-                    ? merekEdcList
                     : merekKomputerList;
 
                 const opts = rawOpts.filter((m) => m !== "Lainnya (Ketik Manual)");

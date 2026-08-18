@@ -80,6 +80,58 @@ export function MasterPerangkatClient() {
   const [fieldPlaceholder, setFieldPlaceholder] = useState("");
   const [fieldOptionsInput, setFieldOptionsInput] = useState("");
 
+  // State Manage Opsi Dropdown Modal
+  const [editingOptionsFieldId, setEditingOptionsFieldId] = useState<string | null>(null);
+  const [tempOptions, setTempOptions] = useState<string[]>([]);
+  const [newOptionInput, setNewOptionInput] = useState("");
+
+  function handleOpenManageOptions(field: CustomField) {
+    setEditingOptionsFieldId(field.id);
+    setTempOptions(field.options && field.options.length > 0 ? [...field.options] : []);
+    setNewOptionInput("");
+  }
+
+  function handleAddOption() {
+    if (!newOptionInput.trim()) return;
+    const val = newOptionInput.trim();
+    if (tempOptions.includes(val)) return;
+    setTempOptions((prev) => [...prev, val]);
+    setNewOptionInput("");
+  }
+
+  function handleUpdateOptionText(index: number, newText: string) {
+    setTempOptions((prev) => {
+      const copy = [...prev];
+      copy[index] = newText;
+      return copy;
+    });
+  }
+
+  function handleRemoveOption(index: number) {
+    setTempOptions((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleSaveFieldOptions() {
+    if (!editingOptionsFieldId || !selectedDeviceId) return;
+
+    setDeviceTypes((prev) =>
+      prev.map((d) => {
+        if (d.id === selectedDeviceId) {
+          const fields = (d.customFields || []).map((f) => {
+            if (f.id === editingOptionsFieldId) {
+              return { ...f, options: tempOptions.filter((o) => o.trim().length > 0) };
+            }
+            return f;
+          });
+          return { ...d, customFields: fields };
+        }
+        return d;
+      })
+    );
+
+    setEditingOptionsFieldId(null);
+  }
+
   useEffect(() => {
     fetchOptions();
   }, []);
@@ -288,6 +340,7 @@ export function MasterPerangkatClient() {
 
   const selectedDevice = deviceTypes.find((d) => d.id === selectedDeviceId) || deviceTypes[0];
   const activeFields = selectedDevice?.customFields || DEFAULT_FIELDS_WORKSTATION;
+  const editingFieldObj = activeFields.find((f) => f.id === editingOptionsFieldId);
 
   return (
     <div className="space-y-6">
@@ -308,6 +361,75 @@ export function MasterPerangkatClient() {
           <Button onClick={() => setShowSuccessModal(false)} className="w-full">
             Tutup
           </Button>
+        </div>
+      </Modal>
+
+      {/* MODAL KELOLA OPSI DROPDOWN */}
+      <Modal
+        open={Boolean(editingOptionsFieldId)}
+        onClose={() => setEditingOptionsFieldId(null)}
+        title={`Kelola Opsi Dropdown: ${editingFieldObj?.label || ""}`}
+        size="md"
+      >
+        <div className="space-y-4 pt-1">
+          <p className="text-xs text-gray-500">
+            Tambahkan opsi baru, ubah teks opsi, atau hapus pilihan yang akan muncul pada dropdown form.
+          </p>
+
+          {/* Form Tambah Opsi Baru */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Tuliskan opsi baru (cth: TES4)..."
+              value={newOptionInput}
+              onChange={(e) => setNewOptionInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleAddOption();
+                }
+              }}
+              className="text-xs"
+            />
+            <Button size="sm" type="button" onClick={handleAddOption} className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0">
+              <Plus className="w-4 h-4 mr-1" /> Tambah
+            </Button>
+          </div>
+
+          {/* Daftar Opsi Saat Ini */}
+          <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-100 rounded-xl p-3 bg-gray-50/50">
+            {tempOptions.length === 0 ? (
+              <p className="text-xs text-center text-gray-400 py-3">Belum ada pilihan opsi. Tambahkan di atas.</p>
+            ) : (
+              tempOptions.map((opt, idx) => (
+                <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-2xs">
+                  <span className="text-xs font-mono font-bold text-gray-400 w-6 text-center">{idx + 1}.</span>
+                  <Input
+                    value={opt}
+                    onChange={(e) => handleUpdateOptionText(idx, e.target.value)}
+                    className="text-xs h-8 bg-white border-gray-200 focus:border-indigo-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveOption(idx)}
+                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                    title="Hapus Opsi Ini"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-2 border-t border-gray-100 pt-3">
+            <Button variant="secondary" size="sm" onClick={() => setEditingOptionsFieldId(null)}>
+              Batal
+            </Button>
+            <Button size="sm" onClick={handleSaveFieldOptions} className="bg-primary hover:bg-primary-600">
+              <Check className="w-4 h-4 mr-1" /> Simpan Opsi
+            </Button>
+          </div>
         </div>
       </Modal>
       {msg && (
@@ -678,7 +800,20 @@ export function MasterPerangkatClient() {
                       className="flex items-center justify-between p-2 bg-white border border-gray-200 rounded-lg text-xs hover:border-indigo-300 transition-colors shadow-2xs"
                     >
                       <div className="min-w-0 pr-2">
-                        <p className="font-bold text-gray-900 truncate">{field.label}</p>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <p className="font-bold text-gray-900 truncate">{field.label}</p>
+                          {field.type === "select" && (
+                            <button
+                              type="button"
+                              onClick={() => handleOpenManageOptions(field)}
+                              className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-md border border-indigo-200 transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+                              title="Klik untuk Tambah/Edit/Hapus Opsi Dropdown"
+                            >
+                              <Sliders className="w-3 h-3 text-indigo-600" />
+                              {field.options && field.options.length > 0 ? `${field.options.length} Opsi` : "Edit Opsi"}
+                            </button>
+                          )}
+                        </div>
                         <p className="text-[10px] text-gray-400 uppercase">{field.type}</p>
                       </div>
 

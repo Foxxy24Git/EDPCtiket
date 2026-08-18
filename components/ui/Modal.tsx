@@ -82,7 +82,7 @@ export function Modal({
               exit={{ opacity: 0, scale: 0.95, y: 16 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
               className={cn(
-                "relative w-full bg-white rounded-2xl shadow-card-lg pointer-events-auto",
+                "relative w-full bg-white rounded-2xl shadow-card-lg pointer-events-auto flex flex-col max-h-[88vh]",
                 "border border-gray-100 overflow-hidden",
                 sizeClasses[size]
               )}
@@ -91,14 +91,14 @@ export function Modal({
               <button
                 onClick={onClose}
                 aria-label="Tutup"
-                className="absolute top-3.5 right-3.5 z-10 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                className="absolute top-3.5 right-3.5 z-20 p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4 stroke-[2.5]" />
               </button>
 
               {/* Header (jika title atau description ada) */}
               {(title || description) && (
-                <div className="p-4 pr-12 border-b border-gray-100 bg-gray-50/50">
+                <div className="p-4 pr-12 border-b border-gray-100 bg-gray-50/50 shrink-0">
                   {title && (
                     <h2 className="text-sm font-bold text-gray-900">
                       {title}
@@ -113,7 +113,7 @@ export function Modal({
               )}
 
               {/* Body */}
-              <div className="p-4">{children}</div>
+              <div className="p-4 overflow-y-auto flex-1">{children}</div>
             </motion.div>
           </div>
         </>

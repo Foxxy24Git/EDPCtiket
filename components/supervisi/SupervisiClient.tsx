@@ -201,21 +201,30 @@ export function SupervisiClient({ initialTickets }: Props) {
                 </div>
               </div>
 
-              {/* Log/Aktivitas Tambahan (Jika Ada) */}
+              {/* Log/Aktivitas & Kronologi Penanganan */}
               <div className="border-t border-gray-100 pt-4">
-                <span className="block text-xs font-semibold text-gray-400 uppercase mb-2">Riwayat Aktivitas Tambahan</span>
-                <ol className="relative border-l border-gray-100 ml-2 space-y-3">
-                  {selectedTicket.activities.slice(1).map((a) => (
-                    <li key={a.id} className="ml-4 relative text-sm">
-                      <span className="absolute -left-[21px] mt-1.5 w-2 h-2 rounded-full bg-gray-300 border border-white" />
-                      <span className="text-xs text-gray-400">{fmtDateTime(a.waktu)} · {a.userNama}</span>
-                      <p className="text-gray-700 mt-0.5">{a.teks}</p>
-                    </li>
-                  ))}
-                  {selectedTicket.activities.length <= 1 && (
-                    <p className="text-xs text-gray-400 ml-2">Tidak ada log aktivitas tambahan.</p>
-                  )}
-                </ol>
+                <span className="block text-xs font-semibold text-gray-400 uppercase mb-2">
+                  Riwayat Kronologi & Log Aktivitas ({selectedTicket.activities.length})
+                </span>
+                <div className="max-h-[220px] overflow-y-auto pr-2 border border-gray-100 rounded-xl p-3 bg-gray-50/50">
+                  <ol className="relative border-l border-indigo-200 ml-2 space-y-3">
+                    {selectedTicket.activities.map((a) => (
+                      <li key={a.id} className="ml-4 relative text-sm">
+                        <span className="absolute -left-[17px] mt-1.5 w-2.5 h-2.5 rounded-full bg-indigo-500 border border-white" />
+                        <div className="flex items-center justify-between text-xs text-gray-500 font-medium">
+                          <span className="font-semibold text-gray-800">{a.userNama}</span>
+                          <span>{fmtDateTime(a.waktu)}</span>
+                        </div>
+                        <p className="text-gray-800 mt-1 bg-white p-2 rounded-lg border border-gray-100 whitespace-pre-wrap text-xs shadow-2xs">
+                          {a.teks}
+                        </p>
+                      </li>
+                    ))}
+                    {selectedTicket.activities.length === 0 && (
+                      <p className="text-xs text-gray-400 ml-2 py-2 text-center">Tidak ada log aktivitas.</p>
+                    )}
+                  </ol>
+                </div>
               </div>
 
               {approveError && (
@@ -224,8 +233,8 @@ export function SupervisiClient({ initialTickets }: Props) {
                 </p>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex justify-end gap-2 border-t border-gray-100 pt-4">
+              {/* Action Buttons — Sticky at bottom */}
+              <div className="sticky bottom-0 bg-white pt-3 pb-1 border-t border-gray-100 flex flex-wrap justify-end gap-2 z-10">
                 <Button
                   type="button"
                   variant="outline"
@@ -244,8 +253,8 @@ export function SupervisiClient({ initialTickets }: Props) {
                 >
                   Tutup
                 </Button>
-                <Button onClick={handleApprove} loading={approving}>
-                  <ShieldCheck className="w-4 h-4" /> Approve Pekerjaan
+                <Button onClick={handleApprove} loading={approving} className="bg-green-600 hover:bg-green-700 text-white font-bold">
+                  <ShieldCheck className="w-4 h-4 mr-1" /> Approve Pekerjaan
                 </Button>
               </div>
             </div>

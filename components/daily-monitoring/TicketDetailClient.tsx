@@ -20,11 +20,65 @@ import {
 import { Card, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { Select } from "@/components/ui/Select";
 import { Badge } from "@/components/ui/Badge";
 import { Modal } from "@/components/ui/Modal";
 import { cn } from "@/lib/cn";
 import { fmtDateTime } from "@/lib/format";
 import type { TicketDetail } from "@/lib/ticketQueries";
+
+const DAFTAR_CABANG_DEFAULT = [
+  "PAYAKUMBUH",
+  "BUKITTINGGI",
+  "BATUSANGKAR",
+  "SOLOK",
+  "PARIAMAN",
+  "PAINAN",
+  "SIJUNJUNG",
+  "LUBUK SIKAPING",
+  "PASAR RAYA",
+  "SITEBA",
+  "SAWAHLUNTO",
+  "SIMPANG EMPAT",
+  "MUARA LABUH",
+  "LUBUK GADANG",
+  "KOTO BARU",
+  "PULAU PUNJUNG",
+  "UJUNG GADING",
+  "LUBUK BASUNG",
+  "LUBUK ALUNG",
+  "TAPAN",
+  "LINTAU",
+  "CABANG UTAMA",
+  "MENTAWAI",
+  "TAPUS",
+  "ALAHAN PANJANG",
+  "JAKARTA",
+  "PEKANBARU",
+  "BANDUNG",
+  "SYARIAH PADANG",
+  "SYARIAH SOLOK",
+  "SYARIAH PAYAKUMBUH",
+  "SYARIAH BUKITTINGGI",
+  "SYARIAH BATUSANGKAR",
+  "PADANG PANJANG",
+];
+
+interface CustomField {
+  id: string;
+  label: string;
+  type: "text" | "date" | "select" | "textarea";
+  options?: string[];
+  required?: boolean;
+  placeholder?: string;
+}
+
+interface DeviceTypeOption {
+  id: string;
+  nama: string;
+  subtypes: string[];
+  customFields?: CustomField[];
+}
 
 interface Props {
   initialTicket: TicketDetail;
@@ -52,6 +106,19 @@ export function TicketDetailClient({
     (ticket.ownerId === currentUserId || !ticket.ownerId || role === "superadmin");
 
   const isSelesai = ticket.status === "selesai";
+  const isCurrentlyInVendor =
+    Boolean(ticket.wsTglKeVendor) &&
+    (!ticket.wsTglSelesaiVendor || new Date(ticket.wsTglSelesaiVendor) < new Date(ticket.wsTglKeVendor!));
+  const isSentToCabang = Boolean(ticket.wsTglKembaliKeCabang);
+
+  // State master data
+  const [daftarCabang, setDaftarCabang] = useState<string[]>(DAFTAR_CABANG_DEFAULT);
+  const [merekKomputerList, setMerekKomputerList] = useState<string[]>(["Lenovo", "HP", "Dell", "Acer", "Asus", "Apple", "Fujitsu"]);
+  const [merekEdcList, setMerekEdcList] = useState<string[]>(["Ingenico", "Verifone", "Pax", "Sunmi", "MoreFun", "Castle"]);
+  const [deviceTypesList, setDeviceTypesList] = useState<DeviceTypeOption[]>([
+    { id: "workstation", nama: "Komputer", subtypes: ["Desktop", "All-in-One", "Laptop", "Mini PC"] },
+    { id: "edc", nama: "Mesin EDC", subtypes: [] },
+  ]);
 
   // State log kegiatan manual
   const [kegiatan, setKegiatan] = useState("");
@@ -70,9 +137,12 @@ export function TicketDetailClient({
   const [editCabang, setEditCabang] = useState("");
   const [editCapem, setEditCapem] = useState("");
   const [editTglMasuk, setEditTglMasuk] = useState("");
-  const [editMerek, setEditMerek] = useState("");
+  const [editDeviceId, setEditDeviceId] = useState<string>("workstation");
+  const [editSubtype, setEditSubtype] = useState<string>("");
+  const [editMerekPilihan, setEditMerekPilihan] = useState<string>("");
   const [editKelengkapan, setEditKelengkapan] = useState("");
   const [editKerusakan, setEditKerusakan] = useState("");
+  const [editCustomValues, setEditCustomValues] = useState<Record<string, string>>({});
   const [editCpTipe, setEditCpTipe] = useState<"pic" | "wag">("pic");
   const [editCpNama, setEditCpNama] = useState("");
   const [editCpTelp, setEditCpTelp] = useState("");
@@ -86,14 +156,32 @@ export function TicketDetailClient({
   const [vendorOptions, setVendorOptions] = useState<string[]>(["PT Infomedia", "Vendor Lenovo", "PT Multipolar", "Vendor HP", "PT Visionet"]);
 
   useEffect(() => {
+    fetch("/api/workstation")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.items && data.items.length > 0) {
+          setDaftarCabang(data.items.map((item: { namaCabang: string }) => item.namaCabang));
+        }
+      })
+      .catch((err) => console.error("Gagal memuat cabang:", err));
+
     fetch("/api/master-options")
       .then((res) => res.json())
       .then((data) => {
         if (data.vendorList && Array.isArray(data.vendorList)) {
           setVendorOptions(data.vendorList);
         }
+        if (data.merekKomputer && Array.isArray(data.merekKomputer)) {
+          setMerekKomputerList(data.merekKomputer.filter((m: string) => m !== "Lainnya (Ketik Manual)"));
+        }
+        if (data.merekEdc && Array.isArray(data.merekEdc)) {
+          setMerekEdcList(data.merekEdc.filter((m: string) => m !== "Lainnya (Ketik Manual)"));
+        }
+        if (data.deviceTypes && Array.isArray(data.deviceTypes) && data.deviceTypes.length > 0) {
+          setDeviceTypesList(data.deviceTypes);
+        }
       })
-      .catch((err) => console.error("Gagal memuat vendor options:", err));
+      .catch((err) => console.error("Gagal memuat master options:", err));
   }, []);
 
   // State Pengembalian dari Vendor Modal
@@ -115,10 +203,6 @@ export function TicketDetailClient({
   const [closeBusy, setCloseBusy] = useState(false);
   const [actionErr, setActionErr] = useState("");
 
-  // Hitung status vendor saat ini
-  const isSentToVendor =
-    Boolean(ticket.wsTglKeVendor) &&
-    (!ticket.wsTglSelesaiVendor || new Date(ticket.wsTglSelesaiVendor) < new Date(ticket.wsTglKeVendor!));
 
   async function reload() {
     try {
@@ -160,14 +244,256 @@ export function TicketDetailClient({
     }
   }
 
+  function parseMerekKomputer(raw: string, devTypes: DeviceTypeOption[]) {
+    let devId = devTypes[0]?.id || "workstation";
+    let subtype = "";
+    let brand = raw || "";
+
+    if (!raw) return { devId, subtype, brand };
+
+    const match = raw.match(/^\[(.*?)\]\s*(.*)$/);
+    if (match) {
+      const inside = match[1];
+      brand = match[2].trim();
+
+      if (inside.includes(" - ")) {
+        const parts = inside.split(" - ");
+        const devName = parts[0].trim();
+        subtype = parts[1].trim();
+        const foundDev = devTypes.find(
+          (d) => d.nama.toLowerCase().includes(devName.toLowerCase()) || devName.toLowerCase().includes(d.nama.toLowerCase())
+        );
+        if (foundDev) devId = foundDev.id;
+      } else {
+        const devName = inside.trim();
+        const foundDev = devTypes.find(
+          (d) => d.nama.toLowerCase().includes(devName.toLowerCase()) || devName.toLowerCase().includes(d.nama.toLowerCase())
+        );
+        if (foundDev) devId = foundDev.id;
+      }
+    } else {
+      brand = raw.trim();
+    }
+
+    return { devId, subtype, brand };
+  }
+
+  const activeDeviceObj = deviceTypesList.find((d) => d.id === editDeviceId) || deviceTypesList[0];
+
+  const defaultFields: CustomField[] = [
+    { id: "cabang", label: "Cabang", type: "select", required: true, options: daftarCabang },
+    { id: "tanggalMasuk", label: "Tanggal Masuk", type: "date", required: true },
+    { id: "noSurat", label: "Nomor Surat", type: "text", required: true, placeholder: "cth: SR/00/XX/XXX/00-2026" },
+    { id: "merek", label: `Merek ${activeDeviceObj ? activeDeviceObj.nama : "Perangkat"}`, type: "select", required: true },
+    { id: "capem", label: "Cabang Pembantu / Capem (opsional)", type: "text", required: false, placeholder: "cth: UNAND, dsb" },
+    { id: "kelengkapan", label: "Kelengkapan", type: "text", required: true, placeholder: "cth: Adaptor, kabel, dus, dsb" },
+    { id: "sn", label: `Serial Number (SN) ${activeDeviceObj ? activeDeviceObj.nama : "Perangkat"}`, type: "text", required: true, placeholder: "Nomor seri mesin / perangkat..." },
+    { id: "kerusakan", label: "Kerusakan", type: "textarea", required: true, placeholder: "Jelaskan detail kerusakan..." },
+  ];
+
+  const activeFields =
+    activeDeviceObj?.customFields && activeDeviceObj.customFields.length > 0
+      ? activeDeviceObj.customFields
+      : defaultFields;
+
+  const hasMerekInFields = editDeviceId !== "edc" && activeFields.some((f) => f.id === "merek");
+
+  function getEditFieldValue(fieldId: string): string {
+    switch (fieldId) {
+      case "cabang": return editCabang;
+      case "tanggalMasuk": return editTglMasuk;
+      case "noSurat": return editNoSurat;
+      case "merek": return editMerekPilihan;
+      case "capem": return editCapem;
+      case "kelengkapan": return editKelengkapan;
+      case "sn": return editSn;
+      case "kerusakan": return editKerusakan;
+      default:
+        const cfg = activeFields.find((f) => f.id === fieldId || f.label === fieldId);
+        return editCustomValues[fieldId] || (cfg ? editCustomValues[cfg.label] : "") || "";
+    }
+  }
+
+  function setEditFieldValue(fieldId: string, val: string) {
+    switch (fieldId) {
+      case "cabang": setEditCabang(val); break;
+      case "tanggalMasuk": setEditTglMasuk(val); break;
+      case "noSurat": setEditNoSurat(val); break;
+      case "merek": setEditMerekPilihan(val); break;
+      case "capem": setEditCapem(val); break;
+      case "kelengkapan": setEditKelengkapan(val); break;
+      case "sn": setEditSn(val); break;
+      case "kerusakan": setEditKerusakan(val); break;
+      default:
+        setEditCustomValues((prev) => ({ ...prev, [fieldId]: val }));
+        break;
+    }
+  }
+
+  function getFormattedEditMerek(): string {
+    const devName = activeDeviceObj
+      ? activeDeviceObj.nama.replace(/\s*\/\s*Komputer/i, "").replace(/Workstation\s*\/\s*/i, "")
+      : "Perangkat";
+
+    if (!hasMerekInFields) {
+      if (editSubtype) {
+        return `[${devName} - ${editSubtype}]`;
+      }
+      return `[${devName}]`;
+    }
+
+    const brand = editMerekPilihan.trim();
+
+    if (editSubtype) {
+      return brand ? `[${devName} - ${editSubtype}] ${brand}` : `[${devName} - ${editSubtype}]`;
+    }
+    return brand ? `[${devName}] ${brand}` : `[${devName}]`;
+  }
+
+  function parseKerusakanAndCustomValues(rawKerusakan: string, fields: CustomField[]) {
+    let mainKerusakan = rawKerusakan || "";
+    const parsedValues: Record<string, string> = {};
+
+    const matchExtra = mainKerusakan.match(/^([\s\S]*?)(?:\n?\[Catatan Tambahan:\s*([\s\S]*?)\])?$/);
+    if (matchExtra) {
+      mainKerusakan = matchExtra[1].trim();
+      const extraStr = matchExtra[2];
+      if (extraStr) {
+        const parts = extraStr.split(" | ");
+        for (const p of parts) {
+          const idx = p.indexOf(":");
+          if (idx !== -1) {
+            const keyOrLabel = p.slice(0, idx).trim();
+            const val = p.slice(idx + 1).trim();
+
+            const matchedField = fields.find(
+              (f) => f.id.toLowerCase() === keyOrLabel.toLowerCase() || f.label.toLowerCase() === keyOrLabel.toLowerCase()
+            );
+
+            if (matchedField) {
+              parsedValues[matchedField.id] = val;
+            } else {
+              parsedValues[keyOrLabel] = val;
+            }
+          }
+        }
+      }
+    }
+
+    return { mainKerusakan, parsedValues };
+  }
+
   async function handleSaveEdit(e: React.FormEvent) {
     e.preventDefault();
     setEditErr("");
-    if (!editCabang.trim()) return setEditErr("Cabang wajib diisi.");
-    if (!editNoSurat.trim()) return setEditErr("Nomor surat wajib diisi.");
-    if (!editMerek.trim()) return setEditErr("Merek / Jenis Perangkat wajib diisi.");
-    if (!editSn.trim()) return setEditErr("Serial Number (SN) wajib diisi.");
-    if (!editKerusakan.trim()) return setEditErr("Kerusakan wajib diisi.");
+
+    // Validasi field dinamis dari activeFields
+    for (const field of activeFields) {
+      if (field.id === "capem") continue;
+      if (field.id === "merek" && (!hasMerekInFields || editDeviceId === "edc")) continue;
+
+      if (field.required !== false) {
+        const val = getEditFieldValue(field.id);
+        if (!val || !val.trim()) {
+          return setEditErr(`${field.label} wajib diisi.`);
+        }
+      }
+    }
+
+    if (!editCpNama.trim()) return setEditErr("Nama PIC wajib diisi.");
+    if (!editCpTelp.trim()) return setEditErr("Nomor telepon PIC wajib diisi.");
+
+    const phoneDigitsOnly = /^[0-9]+$/;
+    if (!phoneDigitsOnly.test(editCpTelp.trim()) || editCpTelp.trim().length < 10 || editCpTelp.trim().length > 14) {
+      return setEditErr("Nomor telepon (PIC) hanya boleh berupa angka (numeric) dengan panjang 10 hingga 14 digit.");
+    }
+
+    // Susun finalKerusakan tanpa duplikasi key kustom
+    let finalKerusakan = editKerusakan.trim();
+    const extraParts: string[] = [];
+
+    for (const field of activeFields) {
+      if (["cabang", "tanggalMasuk", "noSurat", "merek", "capem", "kelengkapan", "sn", "kerusakan"].includes(field.id)) {
+        continue;
+      }
+      const val = (editCustomValues[field.id] || editCustomValues[field.label] || "").trim();
+      if (val) {
+        extraParts.push(`${field.label}: ${val}`);
+      }
+    }
+
+    if (extraParts.length > 0) {
+      const extraText = extraParts.join(" | ");
+      finalKerusakan = finalKerusakan
+        ? `${finalKerusakan}\n[Catatan Tambahan: ${extraText}]`
+        : `[Catatan Tambahan: ${extraText}]`;
+    }
+
+    const formattedMerek = getFormattedEditMerek();
+
+    // Parse main kerusakan lama dan nilai kustom lama untuk membandingkan perubahan
+    const { mainKerusakan: oldMainKerusakan, parsedValues: oldCustomValues } = parseKerusakanAndCustomValues(
+      ticket.wsKerusakan || "",
+      activeFields
+    );
+
+    // Deteksi rincian perubahan data tiket (apa yang diubah menjadi apa)
+    const changes: string[] = [];
+
+    if (editCabang.trim() !== (ticket.wsCabang || "")) {
+      changes.push(`Cabang: '${ticket.wsCabang || "—"}' ➔ '${editCabang.trim()}'`);
+    }
+    if ((editCapem.trim() || "") !== (ticket.wsCapem || "")) {
+      changes.push(`Capem: '${ticket.wsCapem || "—"}' ➔ '${editCapem.trim() || "—"}'`);
+    }
+    if (editNoSurat.trim() !== (ticket.wsNoSurat || "")) {
+      changes.push(`No Surat: '${ticket.wsNoSurat || "—"}' ➔ '${editNoSurat.trim()}'`);
+    }
+
+    const oldTglStr = ticket.wsTanggalMasuk ? new Date(ticket.wsTanggalMasuk).toISOString().slice(0, 16) : "";
+    if (editTglMasuk && editTglMasuk !== oldTglStr) {
+      changes.push(`Tanggal Masuk: '${oldTglStr || "—"}' ➔ '${editTglMasuk}'`);
+    }
+
+    if (formattedMerek !== (ticket.wsMerekKomputer || "")) {
+      changes.push(`Merek/Perangkat: '${ticket.wsMerekKomputer || "—"}' ➔ '${formattedMerek}'`);
+    }
+    if (editSn.trim() !== (ticket.wsSnKomputer || "")) {
+      changes.push(`Serial Number (SN): '${ticket.wsSnKomputer || "—"}' ➔ '${editSn.trim()}'`);
+    }
+    if (editKelengkapan.trim() !== (ticket.wsKelengkapan || "")) {
+      changes.push(`Kelengkapan: '${ticket.wsKelengkapan || "—"}' ➔ '${editKelengkapan.trim()}'`);
+    }
+
+    // Cek perubahan Kerusakan (hanya teks utama)
+    if (editKerusakan.trim() !== oldMainKerusakan) {
+      changes.push(`Kerusakan: '${oldMainKerusakan || "—"}' ➔ '${editKerusakan.trim()}'`);
+    }
+
+    // Cek perubahan masing-masing field kustom (TES, COBA, dsb) secara spesifik
+    for (const field of activeFields) {
+      if (["cabang", "tanggalMasuk", "noSurat", "merek", "capem", "kelengkapan", "sn", "kerusakan"].includes(field.id)) {
+        continue;
+      }
+      const oldVal = (oldCustomValues[field.id] || oldCustomValues[field.label] || "").trim();
+      const newVal = (editCustomValues[field.id] || editCustomValues[field.label] || "").trim();
+
+      if (oldVal !== newVal) {
+        changes.push(`${field.label}: '${oldVal || "—"}' ➔ '${newVal || "—"}'`);
+      }
+    }
+
+    if (editCpNama.trim() !== (ticket.cpNama || "")) {
+      changes.push(`Nama PIC: '${ticket.cpNama || "—"}' ➔ '${editCpNama.trim()}'`);
+    }
+    if (editCpTelp.trim() !== (ticket.cpTelp || "")) {
+      changes.push(`No Telp/WA: '${ticket.cpTelp || "—"}' ➔ '${editCpTelp.trim()}'`);
+    }
+
+    const activityText =
+      changes.length > 0
+        ? `Memperbarui rincian data tiket:\n- ` + changes.join("\n- ")
+        : `Memperbarui rincian data tiket (${editNoSurat.trim()} / SN: ${editSn.trim()})`;
 
     setEditSaving(true);
     try {
@@ -178,15 +504,15 @@ export function TicketDetailClient({
           wsCabang: editCabang.trim(),
           wsCapem: editCapem.trim() || null,
           wsNoSurat: editNoSurat.trim(),
-          wsMerekKomputer: editMerek.trim(),
+          wsMerekKomputer: formattedMerek,
           wsSnKomputer: editSn.trim(),
           wsKelengkapan: editKelengkapan.trim(),
-          wsKerusakan: editKerusakan.trim(),
+          wsKerusakan: finalKerusakan,
           wsTanggalMasuk: editTglMasuk ? new Date(editTglMasuk).toISOString() : undefined,
-          cpTipe: editCpTipe,
+          cpTipe: "pic",
           cpNama: editCpNama.trim(),
-          cpTelp: editCpTelp.trim() || null,
-          activityText: `Memperbarui rincian data tiket (${editNoSurat.trim()} / SN: ${editSn.trim()})`,
+          cpTelp: editCpTelp.trim(),
+          activityText,
         }),
       });
 
@@ -208,6 +534,9 @@ export function TicketDetailClient({
   async function handleSendToVendor(e: React.FormEvent) {
     e.preventDefault();
     setVendorErr("");
+    if (isCurrentlyInVendor) {
+      return setVendorErr("Perangkat saat ini sedang berada di Vendor. Silakan lakukan pengembalian dari Vendor terlebih dahulu!");
+    }
     if (!vendorNameInput.trim()) return setVendorErr("Nama Vendor wajib diisi.");
     setVendorSaving(true);
     try {
@@ -221,6 +550,7 @@ export function TicketDetailClient({
         body: JSON.stringify({
           wsVendor: vendorFullText,
           wsTglKeVendor: new Date().toISOString(),
+          wsTglSelesaiVendor: null,
           activityText: `Penyerahan ke Vendor ${vendorFullText}`,
         }),
       });
@@ -270,7 +600,7 @@ export function TicketDetailClient({
   async function handleSendToCabang(e: React.FormEvent) {
     e.preventDefault();
     setCabangErr("");
-    if (isSentToVendor) {
+    if (isCurrentlyInVendor) {
       return setCabangErr("Perangkat saat ini sedang berada di Vendor. Silakan tekan 'Terima dari Vendor' terlebih dahulu!");
     }
     if (!picTerimaInput.trim()) return setCabangErr("Nama PIC Penerima wajib diisi.");
@@ -425,7 +755,9 @@ export function TicketDetailClient({
             <Button
               variant="outline"
               size="sm"
+              disabled={isSelesai}
               onClick={() => {
+                if (isSelesai) return;
                 setEditErr("");
                 setEditNoSurat(ticket.wsNoSurat || "");
                 setEditSn(ticket.wsSnKomputer || "");
@@ -433,46 +765,84 @@ export function TicketDetailClient({
                 setEditCapem(ticket.wsCapem || "");
                 setEditTglMasuk(
                   ticket.wsTanggalMasuk
-                    ? new Date(ticket.wsTanggalMasuk).toISOString().slice(0, 10)
+                    ? new Date(ticket.wsTanggalMasuk).toISOString().slice(0, 16)
                     : ""
                 );
-                setEditMerek(ticket.wsMerekKomputer || "");
+
+                const parsed = parseMerekKomputer(ticket.wsMerekKomputer || "", deviceTypesList);
+                setEditDeviceId(parsed.devId);
+                setEditSubtype(parsed.subtype);
+                setEditMerekPilihan(parsed.brand);
+
+                // Parse wsKerusakan & customValues
+                const { mainKerusakan, parsedValues } = parseKerusakanAndCustomValues(ticket.wsKerusakan || "", activeFields);
+
                 setEditKelengkapan(ticket.wsKelengkapan || "");
-                setEditKerusakan(ticket.wsKerusakan || "");
+                setEditKerusakan(mainKerusakan);
+                setEditCustomValues(parsedValues);
                 setEditCpTipe((ticket.cpTipe as "pic" | "wag") || "pic");
                 setEditCpNama(ticket.cpNama || "");
                 setEditCpTelp(ticket.cpTelp || "");
                 setEditModalOpen(true);
               }}
-              className="border-indigo-600 text-indigo-700 hover:bg-indigo-50"
+              className={
+                isSelesai
+                  ? "border-gray-200 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed"
+                  : "border-indigo-600 text-indigo-700 hover:bg-indigo-50"
+              }
+              title={isSelesai ? "Tiket sudah Selesai (Closed)." : "Edit Tiket"}
             >
               <Edit3 className="w-4 h-4 text-indigo-600" /> Edit Tiket
             </Button>
 
             {/* Tombol Vendor Dynamically Toggle */}
-            {!isSentToVendor ? (
+            {isCurrentlyInVendor ? (
               <Button
                 variant="outline"
                 size="sm"
+                disabled={isSelesai}
                 onClick={() => {
-                  setVendorErr("");
-                  setVendorModalOpen(true);
+                  if (isSelesai) return;
+                  setVendorReturnErr("");
+                  setVendorReturnModalOpen(true);
                 }}
-                className="border-amber-600 text-amber-700 hover:bg-amber-50"
+                className={
+                  isSelesai
+                    ? "border-gray-200 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed"
+                    : "border-orange-600 text-orange-700 hover:bg-orange-50 font-bold"
+                }
+                title={
+                  isSelesai
+                    ? "Tiket sudah Selesai (Closed)."
+                    : "Terima/Pengembalian dari Vendor"
+                }
               >
-                <Truck className="w-4 h-4 text-amber-600" /> Penyerahan ke Vendor
+                <CornerDownLeft className="w-4 h-4 text-orange-600" /> Terima dari Vendor
               </Button>
             ) : (
               <Button
                 variant="outline"
                 size="sm"
+                disabled={isSentToCabang || isSelesai}
                 onClick={() => {
-                  setVendorReturnErr("");
-                  setVendorReturnModalOpen(true);
+                  if (isSentToCabang || isSelesai) return;
+                  setVendorErr("");
+                  setVendorModalOpen(true);
                 }}
-                className="border-orange-600 text-orange-700 hover:bg-orange-50 font-bold"
+                className={
+                  isSentToCabang || isSelesai
+                    ? "border-gray-200 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed"
+                    : "border-amber-600 text-amber-700 hover:bg-amber-50"
+                }
+                title={
+                  isSelesai
+                    ? "Tiket sudah Selesai (Closed)."
+                    : isSentToCabang
+                    ? "Perangkat sudah diserahkan ke Cabang."
+                    : "Penyerahan ke Vendor"
+                }
               >
-                <CornerDownLeft className="w-4 h-4 text-orange-600" /> Terima dari Vendor
+                <Truck className="w-4 h-4 text-amber-600" /> Penyerahan ke Vendor
               </Button>
             )}
 
@@ -480,22 +850,27 @@ export function TicketDetailClient({
             <Button
               variant="outline"
               size="sm"
-              disabled={isSentToVendor}
+              disabled={isCurrentlyInVendor || isSentToCabang || isSelesai}
               onClick={() => {
-                if (isSentToVendor) {
+                if (isCurrentlyInVendor) {
                   alert("Perangkat saat ini sedang di-servis di Vendor! Silakan tekan tombol 'Terima dari Vendor' terlebih dahulu sebelum melakukan penyerahan ke cabang.");
                   return;
                 }
+                if (isSentToCabang || isSelesai) return;
                 setCabangErr("");
                 setCabangModalOpen(true);
               }}
               className={
-                isSentToVendor
-                  ? "border-gray-300 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed"
+                isCurrentlyInVendor || isSentToCabang || isSelesai
+                  ? "border-gray-200 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed"
                   : "border-emerald-600 text-emerald-700 hover:bg-emerald-50"
               }
               title={
-                isSentToVendor
+                isSelesai
+                  ? "Tiket sudah Selesai (Closed)."
+                  : isSentToCabang
+                  ? "Perangkat sudah diserahkan ke Cabang."
+                  : isCurrentlyInVendor
                   ? "Perangkat sedang di Vendor. Harus 'Terima dari Vendor' dulu!"
                   : "Penyerahan Perangkat ke Cabang"
               }
@@ -513,26 +888,56 @@ export function TicketDetailClient({
               <FileText className="w-4 h-4 text-blue-600" /> Berita Acara
             </Button>
 
+            {/* Tombol Close Tiket */}
             {!isSelesai && (
               <Button
                 size="sm"
+                disabled={isCurrentlyInVendor}
                 onClick={() => {
+                  if (isCurrentlyInVendor) {
+                    alert("Perangkat saat ini sedang di-servis di Vendor! Silakan lakukan pengembalian dari Vendor terlebih dahulu sebelum melakukan Close Tiket.");
+                    return;
+                  }
                   setActionErr("");
                   setCloseOpen(true);
                 }}
+                className={
+                  isCurrentlyInVendor
+                    ? "bg-gray-300 text-gray-500 cursor-not-allowed opacity-60"
+                    : "bg-primary hover:bg-primary-600 text-white"
+                }
+                title={
+                  isCurrentlyInVendor
+                    ? "Perangkat sedang di Vendor. Harus 'Terima dari Vendor' dulu!"
+                    : "Close Tiket"
+                }
               >
                 <CheckCircle2 className="w-4 h-4" /> Close Tiket
               </Button>
             )}
 
+            {/* Tombol Hapus Tiket */}
             <Button
               variant="danger"
               size="sm"
-              className="ml-auto"
+              className={
+                isSentToCabang || isSelesai
+                  ? "ml-auto bg-gray-200 text-gray-400 border-gray-200 opacity-60 cursor-not-allowed"
+                  : "ml-auto"
+              }
+              disabled={isSentToCabang || isSelesai}
               onClick={() => {
+                if (isSentToCabang || isSelesai) return;
                 setActionErr("");
                 setDelOpen(true);
               }}
+              title={
+                isSelesai
+                  ? "Tiket sudah Selesai (Closed) dan tidak dapat dihapus."
+                  : isSentToCabang
+                  ? "Perangkat telah diserahkan ke Cabang dan tiket tidak dapat dihapus."
+                  : "Hapus Tiket"
+              }
             >
               <Trash2 className="w-4 h-4" /> Hapus Tiket
             </Button>
@@ -599,6 +1004,13 @@ export function TicketDetailClient({
                 </Button>
               </div>
             </form>
+          )}
+
+          {isSelesai && (
+            <div className="mb-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2.5 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-amber-600" />
+              <span>Tiket telah <strong>Selesai (Closed)</strong>. Log kronologi penanganan tidak dapat ditambah lagi.</span>
+            </div>
           )}
 
           <ol className="relative border-l-2 border-gray-100 ml-2 space-y-4">
@@ -813,91 +1225,199 @@ export function TicketDetailClient({
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <Input
-              label="Cabang"
+            {/* Select Jenis Perangkat */}
+            <Select
+              label="Jenis Perangkat"
               required
-              value={editCabang}
-              onChange={(e) => setEditCabang(e.target.value)}
-              placeholder="cth: PAYAKUMBUH"
-            />
-            <Input
-              label="Capem (opsional)"
-              value={editCapem}
-              onChange={(e) => setEditCapem(e.target.value)}
-              placeholder="cth: UNAND"
-            />
-            <Input
-              label="Nomor Surat"
-              required
-              value={editNoSurat}
-              onChange={(e) => setEditNoSurat(e.target.value)}
-              placeholder="cth: SR/00/XX/XXX/00-2026"
-            />
-            <Input
-              label="Tanggal Masuk IT"
-              type="date"
-              required
-              value={editTglMasuk}
-              onChange={(e) => setEditTglMasuk(e.target.value)}
-            />
-            <Input
-              label="Merek / Jenis Perangkat"
-              required
-              value={editMerek}
-              onChange={(e) => setEditMerek(e.target.value)}
-              placeholder="cth: [Workstation - Laptop] Lenovo"
-            />
-            <Input
-              label="Serial Number (SN)"
-              required
-              value={editSn}
-              onChange={(e) => setEditSn(e.target.value)}
-              placeholder="Nomor Seri / SN..."
-            />
-            <div className="sm:col-span-2">
-              <Input
-                label="Kelengkapan"
-                required
-                value={editKelengkapan}
-                onChange={(e) => setEditKelengkapan(e.target.value)}
-                placeholder="cth: Kabel power, adaptor, dus, dll"
-              />
-            </div>
-            <div className="sm:col-span-2 flex flex-col gap-1">
-              <label className="text-sm font-medium text-gray-700">Detail Kerusakan <span className="text-red-500">*</span></label>
-              <textarea
-                rows={3}
-                required
-                value={editKerusakan}
-                onChange={(e) => setEditKerusakan(e.target.value)}
-                placeholder="Jelaskan detail kerusakan..."
-                className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-              />
-            </div>
+              value={editDeviceId}
+              onChange={(e) => {
+                const newId = e.target.value;
+                setEditDeviceId(newId);
+                const dev = deviceTypesList.find((d) => d.id === newId);
+                setEditSubtype(dev && dev.subtypes && dev.subtypes.length > 0 ? dev.subtypes[0] : "");
+                setEditMerekPilihan("");
+              }}
+            >
+              {deviceTypesList.map((dt) => (
+                <option key={dt.id} value={dt.id}>
+                  {dt.nama}
+                </option>
+              ))}
+            </Select>
 
+            {/* Select Sub-tipe jika ada */}
+            {(() => {
+              const activeDev = deviceTypesList.find((d) => d.id === editDeviceId);
+              if (!activeDev || !activeDev.subtypes || activeDev.subtypes.length === 0) return null;
+              return (
+                <Select
+                  label="Tipe / Sub-Judul"
+                  value={editSubtype}
+                  onChange={(e) => setEditSubtype(e.target.value)}
+                >
+                  <option value="">— Pilih Sub-tipe —</option>
+                  {activeDev.subtypes.map((sub) => (
+                    <option key={sub} value={sub}>
+                      {sub}
+                    </option>
+                  ))}
+                </Select>
+              );
+            })()}
+
+            {/* Render activeFields dynamically */}
+            {activeFields.map((field) => {
+              const val = getEditFieldValue(field.id);
+
+              if (field.id === "cabang") {
+                return (
+                  <Select
+                    key={field.id}
+                    label={field.label}
+                    required={field.required !== false}
+                    value={editCabang}
+                    onChange={(e) => setEditCabang(e.target.value)}
+                  >
+                    <option value="">— Pilih Cabang —</option>
+                    {daftarCabang.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
+                      </option>
+                    ))}
+                    {editCabang && !daftarCabang.includes(editCabang) && (
+                      <option value={editCabang}>{editCabang}</option>
+                    )}
+                  </Select>
+                );
+              }
+
+              if (field.id === "merek") {
+                if (!hasMerekInFields) return null;
+
+                const rawOpts = editDeviceId === "edc" ? merekEdcList : merekKomputerList;
+                const opts = rawOpts.filter((m) => m !== "Lainnya (Ketik Manual)");
+                return (
+                  <Select
+                    key={field.id}
+                    label={field.label || `Merek ${activeDeviceObj ? activeDeviceObj.nama : "Perangkat"}`}
+                    required={field.required !== false}
+                    value={editMerekPilihan}
+                    onChange={(e) => setEditMerekPilihan(e.target.value)}
+                  >
+                    <option value="">— Pilih Merek —</option>
+                    {opts.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                    {editMerekPilihan && !opts.includes(editMerekPilihan) && (
+                      <option value={editMerekPilihan}>{editMerekPilihan}</option>
+                    )}
+                  </Select>
+                );
+              }
+
+              if (field.id === "tanggalMasuk") {
+                return (
+                  <div key={field.id} className="flex flex-col gap-1">
+                    <label htmlFor="edit-tgl-masuk" className="text-sm font-medium text-gray-700">
+                      {field.label} {field.required !== false && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      id="edit-tgl-masuk"
+                      type="datetime-local"
+                      required={field.required !== false}
+                      value={editTglMasuk}
+                      onChange={(e) => setEditTglMasuk(e.target.value)}
+                      className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    />
+                  </div>
+                );
+              }
+
+              if (field.type === "textarea") {
+                return (
+                  <div key={field.id} className="sm:col-span-2 flex flex-col gap-1">
+                    <label htmlFor={`edit-field-${field.id}`} className="text-sm font-medium text-gray-700">
+                      {field.label} {field.required !== false && <span className="text-red-500">*</span>}
+                    </label>
+                    <textarea
+                      id={`edit-field-${field.id}`}
+                      rows={3}
+                      required={field.required !== false}
+                      value={val}
+                      onChange={(e) => setEditFieldValue(field.id, e.target.value)}
+                      placeholder={field.placeholder || `Jelaskan detail ${field.label.toLowerCase()}...`}
+                      className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
+                    />
+                  </div>
+                );
+              }
+
+              if (field.type === "select") {
+                const opts = field.options && field.options.length > 0 ? field.options : [];
+                return (
+                  <Select
+                    key={field.id}
+                    label={field.label}
+                    required={field.required !== false}
+                    value={val}
+                    onChange={(e) => setEditFieldValue(field.id, e.target.value)}
+                  >
+                    <option value="">— Pilih {field.label} —</option>
+                    {opts.map((o) => (
+                      <option key={o} value={o}>
+                        {o}
+                      </option>
+                    ))}
+                  </Select>
+                );
+              }
+
+              if (field.type === "date") {
+                return (
+                  <div key={field.id} className="flex flex-col gap-1">
+                    <label htmlFor={`edit-field-${field.id}`} className="text-sm font-medium text-gray-700">
+                      {field.label} {field.required !== false && <span className="text-red-500">*</span>}
+                    </label>
+                    <input
+                      id={`edit-field-${field.id}`}
+                      type="datetime-local"
+                      required={field.required !== false}
+                      value={val}
+                      onChange={(e) => setEditFieldValue(field.id, e.target.value)}
+                      className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+                    />
+                  </div>
+                );
+              }
+
+              return (
+                <Input
+                  key={field.id}
+                  label={field.label}
+                  required={field.required !== false}
+                  value={val}
+                  onChange={(e) => setEditFieldValue(field.id, e.target.value)}
+                  placeholder={field.placeholder || `cth: ${field.label}...`}
+                />
+              );
+            })}
+
+            {/* Informasi Pelapor / Contact Person */}
             <div className="sm:col-span-2 border-t border-gray-100 pt-3 mt-1">
               <h5 className="text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Informasi Pelapor / Contact Person</h5>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-medium text-gray-700">Tipe Pelapor</label>
-                  <select
-                    value={editCpTipe}
-                    onChange={(e) => setEditCpTipe(e.target.value as "pic" | "wag")}
-                    className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary"
-                  >
-                    <option value="pic">PIC Cabang</option>
-                    <option value="wag">Grup WhatsApp (WAG)</option>
-                  </select>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Input
-                  label="Nama Pelapor"
+                  label="Nama PIC"
                   required
                   value={editCpNama}
                   onChange={(e) => setEditCpNama(e.target.value)}
-                  placeholder="Nama PIC / WAG..."
+                  placeholder="Nama PIC penanggung jawab..."
                 />
                 <Input
                   label="No Telepon / WA"
+                  required
                   value={editCpTelp}
                   onChange={(e) => setEditCpTelp(e.target.value)}
                   placeholder="08xxxxxxxxxx"

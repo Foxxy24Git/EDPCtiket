@@ -33,6 +33,13 @@ export async function POST(req: Request, { params }: Params) {
     );
   }
 
+  if (ticket.status === "selesai") {
+    return NextResponse.json(
+      { error: "Tiket telah Selesai (Closed) dan log kegiatan tidak dapat ditambah lagi." },
+      { status: 400 }
+    );
+  }
+
   // Parse body
   const body = await req.json().catch(() => null);
   const teks = typeof body?.teks === "string" ? body.teks.trim() : "";

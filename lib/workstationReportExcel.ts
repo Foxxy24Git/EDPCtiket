@@ -44,25 +44,46 @@ interface ColDef {
 }
 
 const COLUMNS: ColDef[] = [
-  { col: "A", header: "No", width: 4.5, get: (r) => r.no },
-  { col: "B", header: "No Tiket", width: 16, get: (r) => r.noTiket },
-  { col: "C", header: "Cabang", width: 18, left: true, get: (r) => r.wsCabang },
-  { col: "D", header: "Capem / Unit", width: 18, left: true, get: (r) => r.wsCapem },
-  { col: "E", header: "Tanggal Masuk", width: 14, get: (r) => r.wsTanggalMasuk },
-  { col: "F", header: "No Surat Cabang", width: 22, left: true, get: (r) => r.wsNoSurat },
-  { col: "G", header: "Merek Komputer", width: 20, left: true, get: (r) => r.wsMerekKomputer },
-  { col: "H", header: "Kelengkapan", width: 20, left: true, get: (r) => r.wsKelengkapan },
-  { col: "I", header: "Serial Number", width: 16, get: (r) => r.wsSnKomputer },
-  { col: "J", header: "Kerusakan", width: 26, left: true, get: (r) => r.wsKerusakan },
-  { col: "K", header: "Tanggal ke Vendor", width: 14, get: (r) => r.wsTglKeVendor },
-  { col: "L", header: "Vendor", width: 16, left: true, get: (r) => r.wsVendor },
-  { col: "M", header: "Selesai Vendor", width: 14, get: (r) => r.wsTglSelesaiVendor },
-  { col: "N", header: "Kembali ke Cabang", width: 14, get: (r) => r.wsTglKembaliKeCabang },
-  { col: "O", header: "PIC Terima", width: 16, left: true, get: (r) => r.wsPicTerima },
+  { col: "A", header: "No", width: 5, get: (r) => r.no },
+  { col: "B", header: "No Tiket", width: 18, get: (r) => r.noTiket },
+  { col: "C", header: "Cabang", width: 22, left: true, get: (r) => r.wsCabang },
+  { col: "D", header: "Capem / Unit", width: 20, left: true, get: (r) => r.wsCapem },
+  { col: "E", header: "Tanggal Masuk", width: 15, get: (r) => r.wsTanggalMasuk },
+  { col: "F", header: "No Surat Cabang", width: 24, left: true, get: (r) => r.wsNoSurat },
+  { col: "G", header: "Merek Komputer", width: 28, left: true, get: (r) => r.wsMerekKomputer },
+  { col: "H", header: "Kelengkapan", width: 24, left: true, get: (r) => r.wsKelengkapan },
+  { col: "I", header: "Serial Number", width: 20, get: (r) => r.wsSnKomputer },
+  { col: "J", header: "Kerusakan", width: 36, left: true, get: (r) => r.wsKerusakan },
+  { col: "K", header: "Tanggal ke Vendor", width: 15, get: (r) => r.wsTglKeVendor },
+  { col: "L", header: "Vendor", width: 22, left: true, get: (r) => r.wsVendor },
+  { col: "M", header: "Selesai Vendor", width: 15, get: (r) => r.wsTglSelesaiVendor },
+  { col: "N", header: "Kembali ke Cabang", width: 15, get: (r) => r.wsTglKembaliKeCabang },
+  { col: "O", header: "PIC Terima", width: 20, left: true, get: (r) => r.wsPicTerima },
   { col: "P", header: "Status", width: 12, get: (r) => r.status },
   { col: "Q", header: "Supervisi", width: 12, get: (r) => r.statusSupervisi },
-  { col: "R", header: "Keterangan", width: 22, left: true, get: (r) => r.keterangan },
+  { col: "R", header: "Keterangan", width: 24, left: true, get: (r) => r.keterangan },
 ];
+
+function estimateCellLines(val: unknown, colWidth: number): number {
+  if (val === null || val === undefined) return 1;
+  const str = String(val);
+  if (!str) return 1;
+
+  const lines = str.split(/\r?\n/);
+  let totalLines = 0;
+
+  for (const line of lines) {
+    if (!line) {
+      totalLines += 1;
+      continue;
+    }
+    const effectiveWidth = Math.max(1, colWidth - 2);
+    const wrapped = Math.ceil(line.length / effectiveWidth);
+    totalLines += Math.max(1, wrapped);
+  }
+
+  return Math.max(1, totalLines);
+}
 
 export async function buildWorkstationWorkbook(
   tickets: WorkstationReportRow[],
@@ -137,7 +158,17 @@ export async function buildWorkstationWorkbook(
   let rowIdx = 7;
   for (const t of tickets) {
     const row = ws.getRow(rowIdx);
-    row.height = 20;
+
+    // Hitung jumlah baris terbanyak secara presisi untuk tinggi baris fleksibel
+    let maxLines = 1;
+    for (const colDef of COLUMNS) {
+      const val = colDef.get(t);
+      const lines = estimateCellLines(val, colDef.width);
+      if (lines > maxLines) maxLines = lines;
+    }
+
+    // Tinggi baris dinamis: 16pt per baris teks + 8pt padding agar tidak berdempetan
+    row.height = Math.max(24, maxLines * 16 + 8);
     const isStripe = rowIdx % 2 === 0;
 
     for (const colDef of COLUMNS) {

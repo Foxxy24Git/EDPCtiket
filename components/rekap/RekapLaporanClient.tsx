@@ -76,6 +76,27 @@ function formatIndonesianDate(dateStr: string) {
   };
 }
 
+export function resolveNamaPerangkat(wsMerekKomputer?: string | null): string {
+  if (!wsMerekKomputer || !wsMerekKomputer.trim()) {
+    return "Perangkat IT";
+  }
+
+  const raw = wsMerekKomputer.trim();
+  const match = raw.match(/^\[(.*?)\]\s*(.*)$/);
+
+  if (match) {
+    const inside = match[1].trim();
+    const brand = match[2].trim();
+
+    if (brand) {
+      return `${inside} (${brand})`;
+    }
+    return inside;
+  }
+
+  return raw;
+}
+
 export function RekapLaporanClient({ today }: Props) {
   return (
     <Suspense fallback={<div className="py-8 text-center text-sm text-gray-500">Memuat halaman...</div>}>
@@ -166,8 +187,7 @@ function RekapLaporanContent({ today }: Props) {
   }, [ticketIdParam]);
 
   function setFormAndDeviceFromTicket(t: TicketOption, resetList = false) {
-    const isEdc = (t.wsMerekKomputer || "").toLowerCase().includes("edc");
-    const namaPerangkat = isEdc ? "Mesin EDC" : (t.wsMerekKomputer.replace(/^\[.*?\]\s*/, "") || "Komputer All in One");
+    const namaPerangkat = resolveNamaPerangkat(t.wsMerekKomputer);
     const sn = t.wsSnKomputer || "-";
 
     if (resetList) {
@@ -211,8 +231,7 @@ function RekapLaporanContent({ today }: Props) {
     if (!addDeviceId) return;
     const found = tickets.find((t) => t.id === addDeviceId);
     if (found) {
-      const isEdc = (found.wsMerekKomputer || "").toLowerCase().includes("edc");
-      const namaPerangkat = isEdc ? "Mesin EDC" : (found.wsMerekKomputer.replace(/^\[.*?\]\s*/, "") || "Komputer All in One");
+      const namaPerangkat = resolveNamaPerangkat(found.wsMerekKomputer);
       const sn = found.wsSnKomputer || "-";
       setDeviceList((prev) => [...prev, { id: found.id, namaPerangkat, sn, merekKomputer: found.wsMerekKomputer }]);
       setAddDeviceId("");
@@ -227,31 +246,7 @@ function RekapLaporanContent({ today }: Props) {
     for (const d of deviceList) {
       const foundTicket = tickets.find((t) => t.id === d.id);
       const raw = d.merekKomputer || foundTicket?.wsMerekKomputer || d.namaPerangkat || "";
-
-      let cat = "Komputer";
-
-      if (raw.startsWith("[")) {
-        const match = /^\[([^\]]+)\]/.exec(raw);
-        if (match) {
-          cat = match[1].trim().replace(/\s*-\s*/g, " ");
-        }
-      } else if (/edc/i.test(raw)) {
-        cat = "Mesin EDC";
-      } else if (/router/i.test(raw)) {
-        cat = "Router";
-      } else if (/atm/i.test(raw)) {
-        cat = "ATM";
-      } else if (/desktop/i.test(raw)) {
-        cat = "Komputer Desktop";
-      } else if (/mini pc/i.test(raw)) {
-        cat = "Komputer Mini PC";
-      } else if (/laptop/i.test(raw)) {
-        cat = "Komputer Laptop";
-      } else if (/all in one|all-in-one|aio/i.test(raw)) {
-        cat = "Komputer All in One";
-      } else {
-        cat = d.namaPerangkat || "Komputer";
-      }
+      const cat = resolveNamaPerangkat(raw);
 
       counts[cat] = (counts[cat] || 0) + 1;
     }

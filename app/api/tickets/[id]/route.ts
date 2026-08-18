@@ -100,6 +100,13 @@ export async function DELETE(_req: Request, { params }: Params) {
     return NextResponse.json({ error: guard.error }, { status: guard.status });
   }
 
+  if (guard.ticket.status === "selesai" || guard.ticket.wsTglKembaliKeCabang) {
+    return NextResponse.json(
+      { error: "Tiket yang telah diserahkan ke Cabang atau berstatus Selesai (Closed) tidak dapat dihapus." },
+      { status: 400 }
+    );
+  }
+
   try {
     await prisma.ticket.delete({ where: { id } });
     return NextResponse.json({ ok: true });

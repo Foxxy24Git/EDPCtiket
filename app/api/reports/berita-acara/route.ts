@@ -49,37 +49,35 @@ interface BeritaAcaraPayload {
   noTiket?: string;
 }
 
+function resolveNamaPerangkat(wsMerekKomputer?: string | null): string {
+  if (!wsMerekKomputer || !wsMerekKomputer.trim()) {
+    return "Perangkat IT";
+  }
+
+  const raw = wsMerekKomputer.trim();
+  const match = raw.match(/^\[(.*?)\]\s*(.*)$/);
+
+  if (match) {
+    const inside = match[1].trim();
+    const brand = match[2].trim();
+
+    if (brand) {
+      return `${inside} (${brand})`;
+    }
+    return inside;
+  }
+
+  return raw;
+}
+
 function buildDeviceSummaryText(deviceList: Array<{ namaPerangkat: string; merekKomputer?: string }>): string {
   if (!deviceList || deviceList.length === 0) return "0 unit perangkat";
 
   const counts: Record<string, number> = {};
 
   for (const d of deviceList) {
-    const raw = (d.merekKomputer || d.namaPerangkat || "").trim();
-    let cat = "Komputer";
-
-    if (raw.startsWith("[")) {
-      const match = /^\[([^\]]+)\]/.exec(raw);
-      if (match) {
-        cat = match[1].trim().replace(/workstation/i, "Komputer").replace(/\s*-\s*/g, " ").trim();
-      }
-    } else if (/edc/i.test(raw)) {
-      cat = "Mesin EDC";
-    } else if (/router/i.test(raw)) {
-      cat = "Router";
-    } else if (/atm/i.test(raw)) {
-      cat = "ATM";
-    } else if (/desktop/i.test(raw)) {
-      cat = "Komputer Desktop";
-    } else if (/mini pc/i.test(raw)) {
-      cat = "Komputer Mini PC";
-    } else if (/laptop/i.test(raw)) {
-      cat = "Komputer Laptop";
-    } else if (/all in one|all-in-one|aio/i.test(raw)) {
-      cat = "Komputer All in One";
-    } else {
-      cat = d.namaPerangkat || "Komputer";
-    }
+    const raw = d.merekKomputer || d.namaPerangkat || "";
+    const cat = resolveNamaPerangkat(raw);
 
     counts[cat] = (counts[cat] || 0) + 1;
   }
@@ -340,8 +338,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Tiket tidak ditemukan." }, { status: 404 });
     }
 
-    const merekKomputer = ticket.wsMerekKomputer || "";
-    const namaMerekPerangkatStr = merekKomputer.replace(/^\[.*?\]\s*/, "") || "Perangkat Workstation";
+    const namaMerekPerangkatStr = resolveNamaPerangkat(ticket.wsMerekKomputer);
 
     const payload: BeritaAcaraPayload = {
       cabang: ticket.wsCabang || "Utama",

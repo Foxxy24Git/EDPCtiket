@@ -150,16 +150,43 @@ export async function buildLogServerWorkbook(
     };
   }
 
+function estimateCellLines(val: unknown, colWidth: number): number {
+  if (val === null || val === undefined) return 1;
+  const str = String(val);
+  if (!str) return 1;
+
+  const lines = str.split(/\r?\n/);
+  let totalLines = 0;
+
+  for (const line of lines) {
+    if (!line) {
+      totalLines += 1;
+      continue;
+    }
+    const effectiveWidth = Math.max(1, colWidth - 2);
+    const wrapped = Math.ceil(line.length / effectiveWidth);
+    totalLines += Math.max(1, wrapped);
+  }
+
+  return Math.max(1, totalLines);
+}
+
   // --- Data Rows ---
   let rowIdx = 7;
   for (const log of logs) {
     const row = ws.getRow(rowIdx);
     const imgData = getImageBufferAndExtension(log.fotoUrl);
-    if (imgData) {
-      row.height = 45; // Auto adjust row height so photo fits nicely
-    } else {
-      row.height = 20;
+
+    let maxLines = 1;
+    for (const colDef of COLUMNS) {
+      const val = colDef.get(log);
+      const lines = estimateCellLines(val, colDef.width);
+      if (lines > maxLines) maxLines = lines;
     }
+
+    const calculatedHeight = Math.max(24, maxLines * 16 + 8);
+    row.height = imgData ? Math.max(48, calculatedHeight) : calculatedHeight;
+
     const isStripe = rowIdx % 2 === 0;
 
     for (const colDef of COLUMNS) {
