@@ -19,11 +19,11 @@ async function seedUsers() {
     const passwordHash = await bcrypt.hash(u.username, 10);
     await prisma.user.upsert({
       where: { username: u.username },
-      update: { nama: u.nama, role: u.role },
+      update: {}, // Jangan ubah nama, role, atau password jika user default ini sudah ada & pernah diedit di server
       create: { ...u, passwordHash },
     });
   }
-  console.log(`  users: ${users.length} akun (password = username)`);
+  console.log(`  users: ${users.length} akun default dipastikan tersedia`);
 }
 
 async function seedWorkstationMaster() {
@@ -68,12 +68,8 @@ async function seedWorkstationMaster() {
     const existing = await prisma.workstationMaster.findFirst({
       where: { namaCabang: item.namaCabang },
     });
-    if (existing) {
-      await prisma.workstationMaster.update({
-        where: { id: existing.id },
-        data: { kodeKantor: item.kodeKantor },
-      });
-    } else {
+    // Hanya buat jika belum ada, jangan menimpa jika cabang sudah ada / diubah di server
+    if (!existing) {
       await prisma.workstationMaster.create({
         data: item,
       });
