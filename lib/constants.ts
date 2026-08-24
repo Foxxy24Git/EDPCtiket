@@ -45,7 +45,7 @@ export const NAV_ITEMS: NavItem[] = [
     roles: ["user", "supervisi"],
   },
   {
-    label: "Weekly Monitoring",
+    label: "Data Monitoring",
     href: "/weekly-monitoring",
     icon: CalendarRange,
     description: "Riwayat tiket workstation (read-only)",

@@ -127,6 +127,7 @@ export interface WorkstationWeeklyFilter {
   to: Date;
   cabang?: string | null;
   status?: string | null;
+  statusSupervisi?: string | null;
   search?: string | null;
   jenisPerangkat?: string | null;
 }
@@ -145,6 +146,9 @@ export async function listWorkstationWeeklyTickets(
   }
   if (f.status === "proses" || f.status === "selesai") {
     where.status = f.status;
+  }
+  if (f.statusSupervisi === "approved" || f.statusSupervisi === "belum") {
+    where.statusSupervisi = f.statusSupervisi;
   }
   if (f.jenisPerangkat?.trim()) {
     const jp = f.jenisPerangkat.trim();
@@ -238,6 +242,9 @@ export async function countWeeklyTickets(f: WorkstationWeeklyFilter): Promise<nu
   }
   if (f.status === "proses" || f.status === "selesai") {
     where.status = f.status;
+  }
+  if (f.statusSupervisi === "approved" || f.statusSupervisi === "belum") {
+    where.statusSupervisi = f.statusSupervisi;
   }
   if (f.jenisPerangkat?.trim()) {
     const jp = f.jenisPerangkat.trim();

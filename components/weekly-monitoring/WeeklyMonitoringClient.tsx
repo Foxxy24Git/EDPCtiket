@@ -45,6 +45,7 @@ export function WeeklyMonitoringClient({
   const [to, setTo] = useState(initialTo);
   const [cabang, setCabang] = useState("");
   const [status, setStatus] = useState("");
+  const [statusSupervisi, setStatusSupervisi] = useState("");
   const [jenisPerangkat, setJenisPerangkat] = useState("");
   const [search, setSearch] = useState("");
   const [deviceOptions, setDeviceOptions] = useState<string[]>(
@@ -73,6 +74,7 @@ export function WeeklyMonitoringClient({
       if (to) q.set("to", to);
       if (cabang) q.set("cabang", cabang);
       if (status) q.set("status", status);
+      if (statusSupervisi) q.set("statusSupervisi", statusSupervisi);
       if (jenisPerangkat) q.set("jenisPerangkat", jenisPerangkat);
       if (search) q.set("search", search);
 
@@ -94,7 +96,7 @@ export function WeeklyMonitoringClient({
     <div className="space-y-4">
       {/* Panel Filter */}
       <Card padding="md" className="bg-white border border-gray-200 space-y-3">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 items-end">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-500 uppercase">Dari</label>
             <input
@@ -149,6 +151,16 @@ export function WeeklyMonitoringClient({
             <option value="">Semua Status</option>
             <option value="proses">Dalam Proses</option>
             <option value="selesai">Selesai</option>
+          </Select>
+
+          <Select
+            label="Supervisi"
+            value={statusSupervisi}
+            onChange={(e) => setStatusSupervisi(e.target.value)}
+          >
+            <option value="">Semua Approval</option>
+            <option value="approved">Approved</option>
+            <option value="belum">Belum Approved</option>
           </Select>
 
           <Button onClick={() => searchTickets()} disabled={loading} className="w-full">

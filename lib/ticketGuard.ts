@@ -16,20 +16,23 @@ export async function guardTicketMutation(
   session: SessionPayload,
   ticketId: string
 ): Promise<GuardResult> {
-  if (session.role === "supervisi") {
-    return { ok: false, status: 403, error: "Supervisi tidak dapat mengubah tiket." };
+  if (session.role === "supervisi" || session.role === "superadmin") {
+    return {
+      ok: false,
+      status: 403,
+      error: `${session.role === "superadmin" ? "Superadmin" : "Supervisi"} hanya memiliki akses baca (read-only) dan tidak dapat mengubah data tiket.`,
+    };
   }
   const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
   if (!ticket) {
     return { ok: false, status: 404, error: "Tiket tidak ditemukan." };
   }
   const isOwner = ticket.ownerUserId === session.sub;
-  const isSuperAdmin = session.role === "superadmin";
-  if (!isOwner && !isSuperAdmin) {
+  if (!isOwner) {
     return {
       ok: false,
       status: 403,
-      error: "Hanya pemilik tiket atau Superadmin yang dapat mengubah tiket ini.",
+      error: "Hanya IT Support pemilik tiket yang dapat mengubah tiket ini.",
     };
   }
   return { ok: true, ticket };

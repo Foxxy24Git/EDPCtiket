@@ -23,6 +23,7 @@ export async function GET(req: Request) {
     to,
     cabang: sp.get("cabang"),
     status: sp.get("status"),
+    statusSupervisi: sp.get("statusSupervisi"),
     search: sp.get("search"),
     jenisPerangkat: sp.get("jenisPerangkat"),
   };

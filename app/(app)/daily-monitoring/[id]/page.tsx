@@ -26,7 +26,7 @@ export default async function TicketDetailPage({ params, searchParams }: Params)
       role={session.role}
       currentUserId={session.sub}
       backHref={isFromWeekly ? "/weekly-monitoring" : "/daily-monitoring"}
-      backLabel={isFromWeekly ? "Kembali ke Weekly Monitoring" : "Kembali ke Daily Monitoring"}
+      backLabel={isFromWeekly ? "Kembali ke Data Monitoring" : "Kembali ke Daily Monitoring"}
       readOnly={isFromWeekly}
     />
   );

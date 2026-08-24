@@ -102,8 +102,8 @@ export function TicketDetailClient({
 
   const canMutate =
     !readOnly &&
-    (role === "user" || role === "superadmin") &&
-    (ticket.ownerId === currentUserId || !ticket.ownerId || role === "superadmin");
+    role === "user" &&
+    (ticket.ownerId === currentUserId || !ticket.ownerId);
 
   const isSelesai = ticket.status === "selesai";
   const isCurrentlyInVendor =
@@ -705,11 +705,11 @@ export function TicketDetailClient({
         </button>
       </div>
 
-      {(role === "supervisi" || readOnly) && (
+      {(role === "supervisi" || role === "superadmin" || readOnly) && (
         <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-medium px-4 py-2.5 rounded-lg border border-blue-200 shadow-sm">
           <Info className="w-4 h-4 shrink-0 text-blue-600" />
           <span>
-            <strong>Mode Read-Only ({readOnly ? "Weekly Monitoring" : "Supervisi"}):</strong> Anda sedang melihat rincian detail dan kronologi penanganan tiket ini dalam mode baca saja. Modifikasi data hanya dapat dilakukan di Daily Monitoring oleh IT Support.
+            <strong>Mode Read-Only ({readOnly ? "Data Monitoring" : role === "superadmin" ? "Super Admin" : "Supervisi"}):</strong> Anda sedang melihat rincian detail dan kronologi penanganan tiket ini dalam mode baca saja. Modifikasi data hanya dapat dilakukan di Daily Monitoring oleh IT Support pembuat tiket.
           </span>
         </div>
       )}

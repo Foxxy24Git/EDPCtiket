@@ -3,7 +3,7 @@
 import { cn } from "@/lib/cn";
 import { type Role } from "@/lib/constants";
 import { Badge } from "@/components/ui/Badge";
-import { Bell, ChevronDown, LogOut, User2, AlertTriangle } from "lucide-react";
+import { ChevronDown, LogOut, User2, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Modal } from "@/components/ui/Modal";
@@ -79,15 +79,8 @@ export function Topbar({ user }: { user: SessionUser }) {
         </div>
       </div>
 
-      {/* Kanan: notif + profil */}
+      {/* Kanan: profil */}
       <div className="flex items-center gap-3">
-        <button
-          aria-label="Notifikasi"
-          className="relative p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
-        >
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white" />
-        </button>
 
         <div className="relative">
           <button
