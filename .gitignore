@@ -67,3 +67,6 @@ mobile/.flutter-plugins-dependencies
 /master_seed.json
 /files 20.06.28/
 
+# runtime fallback data
+data/master_options.json
+
