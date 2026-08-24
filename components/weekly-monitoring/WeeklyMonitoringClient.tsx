@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Calendar, Loader2, Search } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
@@ -24,6 +24,7 @@ interface Props {
   initialFrom: string;
   initialTo: string;
   wsCabangOptions: string[];
+  initialDeviceOptions?: string[];
 }
 
 export function WeeklyMonitoringClient({
@@ -32,6 +33,7 @@ export function WeeklyMonitoringClient({
   initialFrom,
   initialTo,
   wsCabangOptions,
+  initialDeviceOptions,
 }: Props) {
   const router = useRouter();
   const [items, setItems] = useState<TicketListItem[]>(initialItems);
@@ -43,7 +45,25 @@ export function WeeklyMonitoringClient({
   const [to, setTo] = useState(initialTo);
   const [cabang, setCabang] = useState("");
   const [status, setStatus] = useState("");
+  const [jenisPerangkat, setJenisPerangkat] = useState("");
   const [search, setSearch] = useState("");
+  const [deviceOptions, setDeviceOptions] = useState<string[]>(
+    initialDeviceOptions && initialDeviceOptions.length > 0
+      ? initialDeviceOptions
+      : ["Komputer", "Mesin EDC"]
+  );
+
+  useEffect(() => {
+    fetch("/api/master-options")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.deviceTypes && Array.isArray(data.deviceTypes) && data.deviceTypes.length > 0) {
+          const names = data.deviceTypes.map((d: { nama: string }) => d.nama);
+          setDeviceOptions(names);
+        }
+      })
+      .catch((e) => console.error("Gagal memuat deviceTypes:", e));
+  }, []);
 
   const searchTickets = async () => {
     setLoading(true);
@@ -53,6 +73,7 @@ export function WeeklyMonitoringClient({
       if (to) q.set("to", to);
       if (cabang) q.set("cabang", cabang);
       if (status) q.set("status", status);
+      if (jenisPerangkat) q.set("jenisPerangkat", jenisPerangkat);
       if (search) q.set("search", search);
 
       const res = await fetch(`/api/weekly?${q.toString()}`);
@@ -68,11 +89,12 @@ export function WeeklyMonitoringClient({
     }
   };
 
+
   return (
     <div className="space-y-4">
       {/* Panel Filter */}
-      <Card padding="md" className="bg-white border border-gray-200">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
+      <Card padding="md" className="bg-white border border-gray-200 space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
           <div className="flex flex-col gap-1">
             <label className="text-xs font-semibold text-gray-500 uppercase">Dari</label>
             <input
@@ -92,6 +114,19 @@ export function WeeklyMonitoringClient({
               className="w-full px-3 py-1.5 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
             />
           </div>
+
+          <Select
+            label="Jenis Perangkat"
+            value={jenisPerangkat}
+            onChange={(e) => setJenisPerangkat(e.target.value)}
+          >
+            <option value="">Semua Perangkat</option>
+            {deviceOptions.map((opt) => (
+              <option key={opt} value={opt}>
+                {opt}
+              </option>
+            ))}
+          </Select>
 
           <Select
             label="Cabang"
@@ -116,13 +151,13 @@ export function WeeklyMonitoringClient({
             <option value="selesai">Selesai</option>
           </Select>
 
-          <Button onClick={searchTickets} disabled={loading} className="w-full">
+          <Button onClick={() => searchTickets()} disabled={loading} className="w-full">
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
             Filter Tiket
           </Button>
         </div>
 
-        <div className="relative mt-3">
+        <div className="relative mt-2">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <Search className="w-4 h-4" />
           </span>
@@ -170,7 +205,7 @@ export function WeeklyMonitoringClient({
                   <TableRow
                     key={t.id}
                     className="cursor-pointer hover:bg-gray-50 transition-colors"
-                    onClick={() => router.push(`/daily-monitoring/${t.id}`)}
+                    onClick={() => router.push(`/daily-monitoring/${t.id}?from=weekly`)}
                   >
                     <Td className="font-mono font-semibold text-primary">{t.noTiket}</Td>
                     <Td className="font-medium text-gray-900">{t.wsCabang}</Td>

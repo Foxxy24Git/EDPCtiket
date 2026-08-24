@@ -295,6 +295,39 @@ export async function DELETE(req: Request) {
       );
     }
 
+    // Simpan audit hapus sebelum delete
+    const auditEntry = {
+      id: `del_srvlog_${existingLog.id}_${Date.now()}`,
+      waktu: new Date().toISOString(),
+      namaOrang: existingLog.namaOrang,
+      instansi: existingLog.instansi,
+      teks: `LOG TAMU DIHAPUS oleh ${session.nama} (${session.role.toUpperCase()}) — Tamu: ${existingLog.namaOrang} / ${existingLog.instansi}`,
+      deletedBy: session.nama,
+      deletedByUsername: session.username,
+      deletedByRole: session.role,
+      originalLogId: existingLog.id,
+    };
+
+    const existingAudit = await prisma.masterOption.findUnique({
+      where: { key: "audit_deleted_server_logs" },
+    });
+    let auditArr: typeof auditEntry[] = [];
+    if (existingAudit) {
+      try {
+        auditArr = JSON.parse(existingAudit.value) as typeof auditEntry[];
+      } catch {
+        auditArr = [];
+      }
+    }
+    auditArr.unshift(auditEntry);
+    if (auditArr.length > 500) auditArr = auditArr.slice(0, 500);
+
+    await prisma.masterOption.upsert({
+      where: { key: "audit_deleted_server_logs" },
+      create: { key: "audit_deleted_server_logs", value: JSON.stringify(auditArr) },
+      update: { value: JSON.stringify(auditArr) },
+    });
+
     await prisma.serverAccessLog.delete({ where: { id } });
     return NextResponse.json({ success: true });
   } catch (err) {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Search, Loader2, MapPin, Monitor, Truck, Check } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, MapPin, Monitor, Truck, Check, Sliders, Layers, Copy } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -27,7 +27,7 @@ interface Props {
 }
 
 export function MasterCabangClient({ initialBranches }: Props) {
-  const [activeTab, setActiveTab] = useState<"cabang" | "merek" | "vendor">("cabang");
+  const [activeTab, setActiveTab] = useState<"cabang" | "merek" | "vendor" | "opsi">("cabang");
   const [branches, setBranches] = useState<Branch[]>(initialBranches);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,6 +43,25 @@ export function MasterCabangClient({ initialBranches }: Props) {
     vendorList: ["PT Infomedia", "Vendor Lenovo", "PT Multipolar", "Vendor HP", "PT Visionet"],
   });
   const [savingOptions, setSavingOptions] = useState(false);
+
+  // State untuk Opsi Slide-Down (custom fields select dari deviceTypes)
+  interface CustomField {
+    id: string;
+    label: string;
+    type: string;
+    options?: string[];
+    required?: boolean;
+    placeholder?: string;
+  }
+  interface DeviceType {
+    id: string;
+    nama: string;
+    subtypes: string[];
+    customFields?: CustomField[];
+  }
+  const [deviceTypes, setDeviceTypes] = useState<DeviceType[]>([]);
+  const [fieldOptionInputs, setFieldOptionInputs] = useState<Record<string, string>>({});
+  const [savingFieldOptions, setSavingFieldOptions] = useState(false);
 
   // Modals state untuk Cabang
   const [addOpen, setAddOpen] = useState(false);
@@ -69,6 +88,9 @@ export function MasterCabangClient({ initialBranches }: Props) {
       .then((data) => {
         if (data.merekKomputer && data.merekEdc && data.vendorList) {
           setMasterOptions(data);
+        }
+        if (data.deviceTypes && Array.isArray(data.deviceTypes)) {
+          setDeviceTypes(data.deviceTypes);
         }
       })
       .catch((err) => console.error("Gagal memuat master options:", err));
@@ -110,6 +132,63 @@ export function MasterCabangClient({ initialBranches }: Props) {
       setSavingOptions(false);
     }
   };
+
+  // Handler untuk Opsi Slide-Down (custom select fields)
+  function handleAddOptionToField(fieldId: string, optionVal: string) {
+    if (!optionVal.trim()) return;
+    const cleanOpt = optionVal.trim();
+    setDeviceTypes((prev) =>
+      prev.map((d) => {
+        if (!d.customFields) return d;
+        return {
+          ...d,
+          customFields: d.customFields.map((f) => {
+            if (f.id === fieldId) {
+              const currentOpts = f.options || [];
+              if (currentOpts.includes(cleanOpt)) return f;
+              return { ...f, options: [...currentOpts, cleanOpt] };
+            }
+            return f;
+          }),
+        };
+      })
+    );
+  }
+
+  function handleRemoveOptionFromField(fieldId: string, optionVal: string) {
+    setDeviceTypes((prev) =>
+      prev.map((d) => {
+        if (!d.customFields) return d;
+        return {
+          ...d,
+          customFields: d.customFields.map((f) => {
+            if (f.id === fieldId) {
+              return { ...f, options: (f.options || []).filter((o) => o !== optionVal) };
+            }
+            return f;
+          }),
+        };
+      })
+    );
+  }
+
+  async function saveFieldOptions() {
+    setSavingFieldOptions(true);
+    try {
+      const res = await fetch("/api/master-options", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...masterOptions, deviceTypes }),
+      });
+      if (!res.ok) {
+        console.error("Gagal menyimpan opsi slide-down.");
+      }
+    } catch (e) {
+      console.error("Gagal menyimpan opsi field:", e);
+    } finally {
+      setSavingFieldOptions(false);
+    }
+  }
 
   const filteredBranches = useMemo(() => {
     const q = search.toLowerCase().trim();
@@ -293,6 +372,17 @@ export function MasterCabangClient({ initialBranches }: Props) {
         >
           <Truck className="w-4 h-4" /> 3. Master Vendor Perbaikan
         </button>
+
+        <button
+          onClick={() => setActiveTab("opsi")}
+          className={`flex-1 py-3.5 px-4 text-center font-bold text-sm transition-all flex items-center justify-center gap-2 border-b-2 ${
+            activeTab === "opsi"
+              ? "border-primary text-primary bg-primary-50/30"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <Sliders className="w-4 h-4" /> 4. Opsi Slide-Down
+        </button>
       </div>
 
       {/* ── TAB 1: MASTER CABANG ── */}
@@ -445,6 +535,179 @@ export function MasterCabangClient({ initialBranches }: Props) {
           </div>
         </Card>
       )}
+
+      {/* ── TAB 4: OPSI SLIDE-DOWN (Custom Select Fields dari Master Perangkat) ── */}
+      {activeTab === "opsi" && (() => {
+        // Kumpulkan semua field bertipe 'select' yang dinamis (bukan cabang/merek bawaan)
+        const EXCLUDED_IDS = ["cabang", "merek"];
+        const dynamicSelectFields = Array.from(
+          new Map(
+            deviceTypes
+              .flatMap((d) => d.customFields || [])
+              .filter((f) => f.type === "select" && !EXCLUDED_IDS.includes(f.id))
+              .map((f) => [f.id, f])
+          ).values()
+        );
+
+        return (
+          <div className="space-y-5">
+            {/* Header Info */}
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+              <h3 className="text-sm font-bold text-purple-950 flex items-center gap-2 mb-1">
+                <Sliders className="w-4 h-4 text-purple-600" /> Kelola Isian Opsi Slide-Down
+              </h3>
+              <p className="text-xs text-purple-700">
+                Setiap kolom bertipe <strong>Slide-Down (Dropdown Select)</strong> yang ditambahkan di{" "}
+                <a href="/master-perangkat" className="underline font-semibold hover:text-purple-900">Master Perangkat</a>{" "}
+                akan muncul di sini secara otomatis. Isi opsi pilihannya di bawah ini, lalu klik Simpan.
+              </p>
+            </div>
+
+            {dynamicSelectFields.length === 0 ? (
+              <div className="text-center py-12 border-2 border-dashed border-purple-200 rounded-xl bg-purple-50/30">
+                <Layers className="w-10 h-10 text-purple-300 mx-auto mb-3" />
+                <p className="text-sm font-semibold text-gray-500">Belum ada kolom Slide-Down dinamis</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Tambahkan kolom bertipe &quot;Slide-down&quot; di{" "}
+                  <a href="/master-perangkat" className="text-purple-600 underline">Master Perangkat</a> terlebih dahulu.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {dynamicSelectFields.map((field) => {
+                  const inputVal = fieldOptionInputs[field.id] || "";
+                  const currentOpts = field.options || [];
+
+                  return (
+                    <div key={field.id} className="bg-white border border-indigo-200 rounded-xl shadow-sm overflow-hidden">
+                      {/* Card Header */}
+                      <div className="bg-indigo-50 border-b border-indigo-100 px-4 py-3 flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Layers className="w-4 h-4 text-indigo-600" />
+                          <span className="font-bold text-sm text-indigo-900">{field.label}</span>
+                        </div>
+                        <span className="text-[10px] font-bold bg-indigo-100 text-indigo-700 border border-indigo-200 px-2 py-0.5 rounded-full font-mono">
+                          {currentOpts.length} Opsi
+                        </span>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-4 space-y-3">
+                        {/* Input tambah opsi baru */}
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            placeholder={`Ketik opsi baru untuk ${field.label}...`}
+                            value={inputVal}
+                            onChange={(e) =>
+                              setFieldOptionInputs((prev) => ({ ...prev, [field.id]: e.target.value }))
+                            }
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddOptionToField(field.id, inputVal);
+                                setFieldOptionInputs((prev) => ({ ...prev, [field.id]: "" }));
+                              }
+                            }}
+                            className="flex-1 px-3 py-2 text-xs rounded-lg border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400/40 focus:border-indigo-400 transition-colors"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              handleAddOptionToField(field.id, inputVal);
+                              setFieldOptionInputs((prev) => ({ ...prev, [field.id]: "" }));
+                            }}
+                            className="flex items-center gap-1 px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-lg transition-colors shrink-0"
+                          >
+                            <Plus className="w-3.5 h-3.5" /> Tambah
+                          </button>
+                        </div>
+
+                        {/* Salin dari opsi lain */}
+                        {(() => {
+                          const allOtherOpts = Array.from(new Set(
+                            dynamicSelectFields
+                              .filter((f) => f.id !== field.id)
+                              .flatMap((f) => f.options || [])
+                              .filter((o) => !currentOpts.includes(o))
+                          ));
+                          if (allOtherOpts.length === 0) return null;
+                          return (
+                            <div className="flex items-center gap-1.5 bg-indigo-50/70 p-2 rounded-lg border border-indigo-100">
+                              <Copy className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                              <span className="text-[11px] font-semibold text-indigo-900 shrink-0">Salin dari opsi lain:</span>
+                              <select
+                                defaultValue=""
+                                onChange={(e) => {
+                                  if (e.target.value) {
+                                    handleAddOptionToField(field.id, e.target.value);
+                                    e.target.value = "";
+                                  }
+                                }}
+                                className="w-full text-xs bg-white border border-indigo-200 rounded-md px-2 py-1 text-indigo-900 focus:outline-none focus:ring-1 focus:ring-indigo-400 font-medium cursor-pointer"
+                              >
+                                <option value="">-- Pilih opsi yang sudah ada --</option>
+                                {allOtherOpts.map((o) => (
+                                  <option key={o} value={o}>+ {o}</option>
+                                ))}
+                              </select>
+                            </div>
+                          );
+                        })()}
+
+                        {/* Daftar Opsi Saat Ini */}
+                        {currentOpts.length > 0 ? (
+                          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-2.5 bg-indigo-50/40 border border-indigo-100 rounded-xl">
+                            {currentOpts.map((opt) => (
+                              <span
+                                key={opt}
+                                className="inline-flex items-center gap-1.5 px-3 py-1 bg-white text-indigo-900 border border-indigo-200 rounded-lg text-xs font-semibold shadow-xs"
+                              >
+                                {opt}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveOptionFromField(field.id, opt)}
+                                  className="hover:text-red-600 text-gray-400 font-bold ml-0.5"
+                                  title={`Hapus ${opt}`}
+                                >
+                                  ✕
+                                </button>
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-gray-400 italic py-3 text-center border border-dashed border-gray-200 rounded-lg bg-gray-50/50">
+                            Belum ada opsi. Ketik dan klik &quot;Tambah&quot; di atas.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Tombol Simpan */}
+            {dynamicSelectFields.length > 0 && (
+              <div className="flex justify-end pt-2 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={saveFieldOptions}
+                  disabled={savingFieldOptions}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white text-sm font-bold rounded-xl transition-colors shadow-sm"
+                >
+                  {savingFieldOptions ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Check className="w-4 h-4" />
+                  )}
+                  Simpan Semua Opsi Slide-Down
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Modal Tambah Cabang */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Tambah Cabang Workstation Baru">

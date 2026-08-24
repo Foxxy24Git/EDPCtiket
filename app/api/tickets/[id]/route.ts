@@ -45,6 +45,16 @@ export async function PATCH(req: Request, { params }: Params) {
   const body = await req.json().catch(() => null);
   const activityText = optStr(body?.activityText);
 
+  if (body?.wsMerekKomputer !== undefined) {
+    const val = optStr(body.wsMerekKomputer);
+    if (val && (val.startsWith("[Workstation]") || val.startsWith("[Komputer]")) && !val.includes(" - ")) {
+      return NextResponse.json(
+        { error: "Sub-tipe / jenis workstation (seperti Desktop, All in One, Laptop, Mini PC) wajib dipilih." },
+        { status: 400 }
+      );
+    }
+  }
+
   const updated = await prisma.$transaction(async (tx) => {
     const t = await tx.ticket.update({
       where: { id },
@@ -108,6 +118,39 @@ export async function DELETE(_req: Request, { params }: Params) {
   }
 
   try {
+    // Simpan audit hapus ke MasterOption sebelum delete (karena TicketActivity ikut terhapus via Cascade)
+    const ticket = guard.ticket;
+    const auditEntry = {
+      id: `del_${ticket.id}_${Date.now()}`,
+      waktu: new Date().toISOString(),
+      noTiket: ticket.noTiket,
+      wsCabang: ticket.wsCabang,
+      teks: `TIKET DIHAPUS oleh ${session.nama} (${session.role.toUpperCase()})`,
+      deletedBy: session.nama,
+      deletedByUsername: session.username,
+      deletedByRole: session.role,
+      ticketId: ticket.id,
+    };
+
+    // Upsert audit log hapus tiket
+    const existing = await prisma.masterOption.findUnique({ where: { key: "audit_deleted_tickets" } });
+    let auditArr: typeof auditEntry[] = [];
+    if (existing) {
+      try {
+        auditArr = JSON.parse(existing.value) as typeof auditEntry[];
+      } catch {
+        auditArr = [];
+      }
+    }
+    auditArr.unshift(auditEntry); // tambahkan di awal
+    if (auditArr.length > 500) auditArr = auditArr.slice(0, 500); // batas 500 entri
+
+    await prisma.masterOption.upsert({
+      where: { key: "audit_deleted_tickets" },
+      create: { key: "audit_deleted_tickets", value: JSON.stringify(auditArr) },
+      update: { value: JSON.stringify(auditArr) },
+    });
+
     await prisma.ticket.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (e) {

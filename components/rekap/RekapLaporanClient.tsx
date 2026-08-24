@@ -7,6 +7,7 @@ import { Download, FileSpreadsheet, FileText, Printer, CheckCircle2, Plus, Trash
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
+import { SearchableSelect, type SearchableOption } from "@/components/ui/SearchableSelect";
 
 interface Props {
   today: string; // YYYY-MM-DD
@@ -21,6 +22,9 @@ interface TicketOption {
   wsTanggalMasuk?: string;
   wsPicTerima?: string;
   ownerNama?: string;
+  status?: string;
+  wsTglKembaliKeCabang?: string | null;
+  waktuOpen?: string;
 }
 
 interface DeviceItem {
@@ -162,14 +166,32 @@ function RekapLaporanContent({ today }: Props) {
         if (res.ok) {
           const data = await res.json();
           const items: TicketOption[] = data.items || [];
-          setTickets(items);
+
+          // Hanya tiket berstatus selesai & sudah dilakukan penyerahan ke cabang
+          const closedAndReturned = items.filter(
+            (t) => t.status === "selesai" && Boolean(t.wsTglKembaliKeCabang)
+          );
+          const eligible =
+            closedAndReturned.length > 0
+              ? closedAndReturned
+              : items.filter((t) => t.status === "selesai");
+          const targetItems = eligible.length > 0 ? eligible : items;
+
+          // Urutkan dari yang TERBARU di paling atas (berdasarkan tanggal masuk/waktu open)
+          targetItems.sort((a, b) => {
+            const tA = new Date(a.wsTanggalMasuk || a.waktuOpen || 0).getTime();
+            const tB = new Date(b.wsTanggalMasuk || b.waktuOpen || 0).getTime();
+            return tB - tA;
+          });
+
+          setTickets(targetItems);
 
           let target: TicketOption | undefined;
           if (ticketIdParam) {
-            target = items.find((t) => t.id === ticketIdParam);
+            target = targetItems.find((t) => t.id === ticketIdParam);
           }
-          if (!target && items.length > 0) {
-            target = items[0];
+          if (!target && targetItems.length > 0) {
+            target = targetItems[0];
           }
 
           if (target) {
@@ -217,6 +239,13 @@ function RekapLaporanContent({ today }: Props) {
     }
   }
 
+  // Opsi tiket utama untuk SearchableSelect
+  const mainTicketOptions: SearchableOption[] = tickets.map((t) => ({
+    value: t.id,
+    label: `${t.noTiket} — [${t.wsCabang}] ${t.wsMerekKomputer}`,
+    sublabel: `SN: ${t.wsSnKomputer || "-"} | PIC Penerima: ${t.wsPicTerima || "-"}`,
+  }));
+
   // Filter tiket berdasarkan Cabang yang dipilih pada Berita Acara
   const availableTicketsForBranch = tickets.filter(
     (t) => (t.wsCabang || "").toUpperCase() === (baForm.cabang || "").toUpperCase()
@@ -226,6 +255,13 @@ function RekapLaporanContent({ today }: Props) {
   const unaddedTicketsForBranch = availableTicketsForBranch.filter(
     (t) => !deviceList.some((d) => d.id === t.id)
   );
+
+  // Opsi perangkat tambahan untuk SearchableSelect
+  const extraDeviceOptions: SearchableOption[] = unaddedTicketsForBranch.map((t) => ({
+    value: t.id,
+    label: `${t.noTiket} — ${t.wsMerekKomputer}`,
+    sublabel: `SN: ${t.wsSnKomputer || "-"}`,
+  }));
 
   function handleAddExtraDevice() {
     if (!addDeviceId) return;
@@ -342,9 +378,6 @@ function RekapLaporanContent({ today }: Props) {
   }
 
   const dateFormatted = formatIndonesianDate(baForm.tgl);
-  const tipeHeaderLabel = deviceList.some(d => d.namaPerangkat.toLowerCase().includes("edc"))
-    ? "Mesin EDC"
-    : "Komputer All in One";
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -428,24 +461,25 @@ function RekapLaporanContent({ today }: Props) {
                   </CardTitle>
                 </CardHeader>
 
-                {tickets.length > 0 && (
-                  <div className="mb-4">
-                    <label className="block text-xs font-semibold text-gray-700 mb-1">
-                      Pilih dari Tiket Perangkat Utama (Otomatis Isi)
-                    </label>
-                    <select
+                <div className="mb-4 space-y-1.5">
+                  <label className="block text-xs font-semibold text-gray-700">
+                    Pilih dari Tiket Perangkat Utama (Status: Selesai &amp; Diserahkan)
+                  </label>
+
+                  {tickets.length > 0 ? (
+                    <SearchableSelect
+                      options={mainTicketOptions}
                       value={selectedTicketId}
-                      onChange={(e) => handleSelectMainTicket(e.target.value)}
-                      className="w-full text-xs border border-gray-300 rounded-md p-2 bg-white min-w-0 truncate focus:outline-none focus:ring-1 focus:ring-primary"
-                    >
-                      {tickets.map((t) => (
-                        <option key={t.id} value={t.id}>
-                          {t.noTiket} — [{t.wsCabang}] {t.wsMerekKomputer}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                      onChange={(val) => handleSelectMainTicket(val)}
+                      placeholder="-- Cari / Pilih Tiket Perangkat Utama --"
+                      emptyText="Tidak ada tiket berstatus Selesai yang cocok"
+                    />
+                  ) : (
+                    <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+                      Belum ada tiket berstatus Selesai (Closed) yang diserahkan ke Cabang.
+                    </p>
+                  )}
+                </div>
 
                 <div className="space-y-3">
                   <div>
@@ -470,31 +504,28 @@ function RekapLaporanContent({ today }: Props) {
                   </div>
 
                   {/* TAMBAH PERANGKAT MULTI-DEVICE KHUSUS CABANG TERPILIH */}
-                  <div className="pt-2 border-t border-gray-200">
-                    <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <div className="pt-2 border-t border-gray-200 space-y-2">
+                    <label className="block text-xs font-bold text-gray-700">
                       Opsi Penambahan Perangkat (Cabang: {baForm.cabang})
                     </label>
 
                     {unaddedTicketsForBranch.length > 0 ? (
-                      <div className="flex items-center gap-2 mb-2 w-full">
-                        <select
-                          value={addDeviceId}
-                          onChange={(e) => setAddDeviceId(e.target.value)}
-                          className="flex-1 min-w-0 text-xs border border-gray-300 rounded-md p-2 bg-white truncate focus:outline-none focus:ring-1 focus:ring-primary"
-                        >
-                          <option value="">-- Pilih Perangkat Lain --</option>
-                          {unaddedTicketsForBranch.map((t) => (
-                            <option key={t.id} value={t.id}>
-                              {t.wsMerekKomputer} (SN: {t.wsSnKomputer})
-                            </option>
-                          ))}
-                        </select>
+                      <div className="flex items-center gap-2 w-full">
+                        <div className="flex-1 min-w-0">
+                          <SearchableSelect
+                            options={extraDeviceOptions}
+                            value={addDeviceId}
+                            onChange={(val) => setAddDeviceId(val)}
+                            placeholder="-- Cari / Pilih Perangkat Lain --"
+                            emptyText="Tidak ada perangkat tambahan yang cocok"
+                          />
+                        </div>
                         <Button
                           type="button"
                           size="sm"
                           disabled={!addDeviceId}
                           onClick={handleAddExtraDevice}
-                          className="shrink-0 text-xs px-3 py-1.5 whitespace-nowrap"
+                          className="shrink-0 text-xs px-3 py-2.5 whitespace-nowrap"
                         >
                           <Plus className="w-3.5 h-3.5 mr-1 inline" /> Tambah
                         </Button>

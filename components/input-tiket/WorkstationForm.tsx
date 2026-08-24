@@ -112,7 +112,7 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
 
   // Perangkat & Merek Dinamis
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("workstation");
-  const [selectedSubtype, setSelectedSubtype] = useState<string>("");
+  const [selectedSubtype, setSelectedSubtype] = useState<string>("Desktop");
   const [merekPilihan, setMerekPilihan] = useState("");
 
   // Input Awal Workstation
@@ -185,7 +185,7 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
 
   function resetForm() {
     setSelectedDeviceId("workstation");
-    setSelectedSubtype("");
+    setSelectedSubtype("Desktop");
     setMerekPilihan("");
     setWsCabang("");
     setWsTanggalMasuk("");
@@ -222,6 +222,15 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
     setError("");
 
     const formattedMerek = getFormattedMerek();
+
+    // Validasi sub-tipe wajib jika perangkat memiliki daftar sub-tipe
+    if (activeDeviceObj && activeDeviceObj.subtypes && activeDeviceObj.subtypes.length > 0) {
+      if (!selectedSubtype || !selectedSubtype.trim()) {
+        return setError(
+          `Sub-tipe / jenis ${activeDeviceObj.nama} (misal: ${activeDeviceObj.subtypes.join(", ")}) wajib dipilih.`
+        );
+      }
+    }
 
     // Validasi input wajib dari activeFields
     for (const field of activeFields) {
@@ -442,8 +451,6 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
               }
 
               if (field.id === "merek") {
-                if (selectedDeviceId === "edc") return null;
-
                 const rawOpts =
                   field.options && field.options.length > 0
                     ? field.options

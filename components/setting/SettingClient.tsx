@@ -49,7 +49,11 @@ export function SettingClient({ me, logoUrl }: Props) {
     <div>
       <div className="mb-6">
         <h1 className="page-title">Setting</h1>
-        <p className="page-subtitle">Kelola profil, keamanan akun, dan logo aplikasi.</p>
+        <p className="page-subtitle">
+          {me.role === "superadmin"
+            ? "Kelola profil, keamanan akun, dan logo aplikasi."
+            : "Kelola profil dan keamanan akun."}
+        </p>
       </div>
 
       {/* Tabs */}

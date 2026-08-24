@@ -128,6 +128,7 @@ export interface WorkstationWeeklyFilter {
   cabang?: string | null;
   status?: string | null;
   search?: string | null;
+  jenisPerangkat?: string | null;
 }
 
 /** Query riwayat tiket Workstation untuk Weekly Monitoring. */
@@ -144,6 +145,23 @@ export async function listWorkstationWeeklyTickets(
   }
   if (f.status === "proses" || f.status === "selesai") {
     where.status = f.status;
+  }
+  if (f.jenisPerangkat?.trim()) {
+    const jp = f.jenisPerangkat.trim();
+    if (jp.toLowerCase() === "edc" || jp.toLowerCase() === "mesin edc") {
+      where.wsMerekKomputer = { contains: "EDC", mode: "insensitive" };
+    } else if (jp.toLowerCase() === "komputer" || jp.toLowerCase() === "workstation") {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          NOT: {
+            wsMerekKomputer: { contains: "EDC", mode: "insensitive" },
+          },
+        },
+      ];
+    } else {
+      where.wsMerekKomputer = { contains: jp, mode: "insensitive" };
+    }
   }
 
   const search = f.search?.trim();
@@ -209,13 +227,50 @@ export async function listWorkstationWeeklyTickets(
 }
 
 /** Total tiket workstation dalam rentang tanggal. */
-export async function countWeeklyTickets(range: { from: Date; to: Date }): Promise<number> {
-  return prisma.ticket.count({
-    where: {
-      kategori: "workstation",
-      waktuOpen: { gte: range.from, lte: range.to },
-    },
-  });
+export async function countWeeklyTickets(f: WorkstationWeeklyFilter): Promise<number> {
+  const where: Prisma.TicketWhereInput = {
+    kategori: "workstation",
+    waktuOpen: { gte: f.from, lte: f.to },
+  };
+
+  if (f.cabang?.trim()) {
+    where.wsCabang = f.cabang.trim();
+  }
+  if (f.status === "proses" || f.status === "selesai") {
+    where.status = f.status;
+  }
+  if (f.jenisPerangkat?.trim()) {
+    const jp = f.jenisPerangkat.trim();
+    if (jp.toLowerCase() === "edc" || jp.toLowerCase() === "mesin edc") {
+      where.wsMerekKomputer = { contains: "EDC", mode: "insensitive" };
+    } else if (jp.toLowerCase() === "komputer" || jp.toLowerCase() === "workstation") {
+      where.AND = [
+        ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+        {
+          NOT: {
+            wsMerekKomputer: { contains: "EDC", mode: "insensitive" },
+          },
+        },
+      ];
+    } else {
+      where.wsMerekKomputer = { contains: jp, mode: "insensitive" };
+    }
+  }
+
+  const search = f.search?.trim();
+  if (search) {
+    where.OR = [
+      { noTiket: { contains: search, mode: "insensitive" } },
+      { wsCabang: { contains: search, mode: "insensitive" } },
+      { wsMerekKomputer: { contains: search, mode: "insensitive" } },
+      { wsNoSurat: { contains: search, mode: "insensitive" } },
+      { wsKerusakan: { contains: search, mode: "insensitive" } },
+      { wsVendor: { contains: search, mode: "insensitive" } },
+      { wsSnKomputer: { contains: search, mode: "insensitive" } },
+    ];
+  }
+
+  return prisma.ticket.count({ where });
 }
 
 export interface TicketActivityItem {

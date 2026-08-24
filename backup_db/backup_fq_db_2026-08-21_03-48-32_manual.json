@@ -1,0 +1,958 @@
+{
+  "meta": {
+    "appName": "EDPCtiket Bank Nagari",
+    "backupDate": "2026-08-21T03:48:32.419Z",
+    "version": "1.0",
+    "tables": {
+      "users": 11,
+      "workstationMaster": 35,
+      "tickets": 7,
+      "ticketActivities": 46,
+      "serverAccessLog": 1
+    }
+  },
+  "data": {
+    "users": [
+      {
+        "id": "cmso7dlaw0002unccpx5ecpk0",
+        "username": "pakde",
+        "nama": "Rian Islami",
+        "role": "user",
+        "passwordHash": "$2b$10$pFjc5p.ZPW6CbVpqa9bYb.niNOl/CBeJ1TKVq9ZEPtNVfGrluoL2W",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.193Z"
+      },
+      {
+        "id": "cmso7dlca0003unccx814bldt",
+        "username": "kurnia",
+        "nama": "Kurnia Fajri",
+        "role": "user",
+        "passwordHash": "$2b$10$jVUgSZ9nhJPj98/dt4.Dc.KMH1MTbo88W.WIBVxOhjOAGsBMgo9eW",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.242Z"
+      },
+      {
+        "id": "cmso7dl7u0000uncc5qtqlthp",
+        "username": "mtr1",
+        "nama": "Afrinaldi",
+        "role": "user",
+        "passwordHash": "$2b$10$lfKzjn97HHimCNykAyuWQ.5BuJKHe6qydMZpIfgSm8YJkUPh8M4Se",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.081Z"
+      },
+      {
+        "id": "cmso7dl9h0001unccgemhryz8",
+        "username": "mtr2",
+        "nama": "Rian Islami Putra",
+        "role": "user",
+        "passwordHash": "$2b$10$bQyGoLbkytjrCnbLmZjZW.fHkgbFpXXUdMvzdfWRwRptcwSZt3.My",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.142Z"
+      },
+      {
+        "id": "cmsobylvs0002qz69wgk07h4c",
+        "username": "mtr3",
+        "nama": "Kurnia Fajri",
+        "role": "user",
+        "passwordHash": "$2b$10$0vWpPojYSrZtMrokCopWxO16.MoUDxGXN8CqvJ/LVHiXQmZ8Fjbqa",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.185Z"
+      },
+      {
+        "id": "cmsobylxc0003qz691trhvr2q",
+        "username": "mtr4",
+        "nama": "Ibnu Sauki",
+        "role": "user",
+        "passwordHash": "$2b$10$dlG83U68.8d5qy8pCYNTEORmedLJ.3ENyl3FXOXPjbtHFdxo75fF2",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.240Z"
+      },
+      {
+        "id": "cmsobylys0004qz6917jety4w",
+        "username": "mtr5",
+        "nama": "Ridho M R",
+        "role": "user",
+        "passwordHash": "$2b$10$kVO/30o.k7K1ZDnWgGDuSutQLodJlHA9foDr9e4wqXOV9YaUi4uBC",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.293Z"
+      },
+      {
+        "id": "cmso7dlf30005unccw3by9uur",
+        "username": "superadmin",
+        "nama": "Super Admin",
+        "role": "superadmin",
+        "passwordHash": "$2b$10$KrXZVx8xci4ekGamCgrZ0enW9iYhrgT8AY06AXoCucW1wH9zDNh4e",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.344Z"
+      },
+      {
+        "id": "cmsobym1u0006qz69a9ui1rfc",
+        "username": "tio",
+        "nama": "Tio Rahmayunda",
+        "role": "supervisi",
+        "passwordHash": "$2b$10$fPyhY.hYzYPzGxjQulhi5u6gxCuKaT/OCEFv5ibpDVBrTNOLp98ci",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T07:19:54.402Z"
+      },
+      {
+        "id": "cmso7dldo0004uncc108fj5ry",
+        "username": "berto",
+        "nama": "Berto L",
+        "role": "supervisi",
+        "passwordHash": "$2b$10$ZoFF48YY1D.kvh6qIsyPDOZEkDZjG.xucTysCCpYBiNXJw50PyHli",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-11T05:11:35.293Z"
+      },
+      {
+        "id": "cmt2epgfk000tn701cwbg9771",
+        "username": "wiyoga",
+        "nama": "MUHAMMAD FAWWAZ WIYOGA",
+        "role": "user",
+        "passwordHash": "$2b$10$0xgiJdUO8fM13tNZviRV.uNey17D3FMge.fSrj59JgmLAUvdgx0Tu",
+        "fotoProfilUrl": null,
+        "ttdUrl": null,
+        "isAktif": true,
+        "createdAt": "2026-08-21T03:45:32.528Z"
+      }
+    ],
+    "workstationMaster": [
+      {
+        "id": "cmt2eknue000sn701kj5zf2hv",
+        "namaCabang": "JAMBI",
+        "kodeKantor": "2900",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlf90006unccz2wj80wc",
+        "namaCabang": "PAYAKUMBUH",
+        "kodeKantor": "0100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfc0007unccnfduueds",
+        "namaCabang": "BUKITTINGGI",
+        "kodeKantor": "0200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfe0008unccs79ibqig",
+        "namaCabang": "BATUSANGKAR",
+        "kodeKantor": "0300",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfg0009uncc1s2ahd88",
+        "namaCabang": "SOLOK",
+        "kodeKantor": "0600",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfi000aunccmznjdyqr",
+        "namaCabang": "PARIAMAN",
+        "kodeKantor": "0500",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfk000buncctgbe6ta8",
+        "namaCabang": "PAINAN",
+        "kodeKantor": "0400",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfl000cuncco24d1udj",
+        "namaCabang": "SIJUNJUNG",
+        "kodeKantor": "0700",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfo000dunccbafvx1to",
+        "namaCabang": "LUBUK SIKAPING",
+        "kodeKantor": "0800",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfr000eunccoqmhqixv",
+        "namaCabang": "PASAR RAYA",
+        "kodeKantor": "1000",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlft000funccxx7nw2qg",
+        "namaCabang": "SITEBA",
+        "kodeKantor": "1005",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfv000guncc0aaiq10h",
+        "namaCabang": "SAWAHLUNTO",
+        "kodeKantor": "1100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfw000hunccgg9qtkxr",
+        "namaCabang": "SIMPANG EMPAT",
+        "kodeKantor": "1200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlfy000iunccrp17pm2j",
+        "namaCabang": "MUARA LABUH",
+        "kodeKantor": "1300",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg0000juncc5l6md73s",
+        "namaCabang": "LUBUK GADANG",
+        "kodeKantor": "1301",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg1000kuncc9ulaggkx",
+        "namaCabang": "KOTO BARU",
+        "kodeKantor": "1400",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg2000luncc815fsnj9",
+        "namaCabang": "PULAU PUNJUNG",
+        "kodeKantor": "1403",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg4000munccez46fjpj",
+        "namaCabang": "UJUNG GADING",
+        "kodeKantor": "1500",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg5000nunccdd0sojj8",
+        "namaCabang": "LUBUK BASUNG",
+        "kodeKantor": "1600",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg7000ouncc642ud5xy",
+        "namaCabang": "LUBUK ALUNG",
+        "kodeKantor": "1700",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlg8000punccyzhsso8h",
+        "namaCabang": "TAPAN",
+        "kodeKantor": "1900",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlga000quncc6apqdtg0",
+        "namaCabang": "LINTAU",
+        "kodeKantor": "2000",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgb000runccdn98bjha",
+        "namaCabang": "CABANG UTAMA",
+        "kodeKantor": "2100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgd000suncce6zyht55",
+        "namaCabang": "MENTAWAI",
+        "kodeKantor": "2110",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlge000tunccn305lf46",
+        "namaCabang": "TAPUS",
+        "kodeKantor": "2200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgf000uuncc3u4ax9ew",
+        "namaCabang": "ALAHAN PANJANG",
+        "kodeKantor": "2300",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgh000vunccb1yv8t01",
+        "namaCabang": "JAKARTA",
+        "kodeKantor": "2400",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgi000wuncc8nnkzrus",
+        "namaCabang": "PEKANBARU",
+        "kodeKantor": "2500",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgk000xunccgbn77etx",
+        "namaCabang": "BANDUNG",
+        "kodeKantor": "2600",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgl000yunccghe21lpx",
+        "namaCabang": "SYARIAH PADANG",
+        "kodeKantor": "7100",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgm000zuncc0svoxser",
+        "namaCabang": "SYARIAH SOLOK",
+        "kodeKantor": "7202",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgo0010uncc5xqfq7uy",
+        "namaCabang": "SYARIAH PAYAKUMBUH",
+        "kodeKantor": "7200",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgp0011uncct1iazour",
+        "namaCabang": "SYARIAH BUKITTINGGI",
+        "kodeKantor": "7201",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgr0012uncc2citx435",
+        "namaCabang": "SYARIAH BATUSANGKAR",
+        "kodeKantor": "7203",
+        "lokasiKantor": null
+      },
+      {
+        "id": "cmso7dlgs0013unccihcyhu4f",
+        "namaCabang": "PADANG PANJANG",
+        "kodeKantor": "0900",
+        "lokasiKantor": null
+      }
+    ],
+    "tickets": [
+      {
+        "id": "cmt2cif3h0005ql01nba9u27t",
+        "noTiket": "WS-T8PWAQK2",
+        "kategori": "workstation",
+        "waktuOpen": "2026-08-21T02:44:04.973Z",
+        "waktuSelesai": "2026-08-21T02:44:21.442Z",
+        "cpTipe": "pic",
+        "cpNama": "jambu",
+        "cpTelp": "08888888888",
+        "jenisGangguan": "Kerusakan Perangkat",
+        "sumberPenyebab": "Workstation",
+        "metodePenanganan": "Penanganan Teknisi",
+        "wsCabang": "PADANG PANJANG",
+        "wsTanggalMasuk": "2026-08-21T09:42:00.000Z",
+        "wsNoSurat": "SR/00/XX/2026",
+        "wsMerekKomputer": "[Workstation - All in One] Dell",
+        "wsCapem": "-",
+        "wsKelengkapan": "-",
+        "wsSnKomputer": "SSN899898",
+        "wsKerusakan": "kllklklklk",
+        "wsTglKeVendor": null,
+        "wsVendor": null,
+        "wsTglSelesaiVendor": null,
+        "wsTglKembaliKeCabang": "2026-08-21T02:44:28.467Z",
+        "wsPicTerima": "kmmmkkm",
+        "status": "selesai",
+        "statusSupervisi": "belum",
+        "ownerUserId": "cmso7dl7u0000uncc5qtqlthp",
+        "keterangan": "kmkmkm",
+        "createdAt": "2026-08-21T02:44:04.973Z"
+      },
+      {
+        "id": "cmsybcfj70003pc012o9k4hts",
+        "noTiket": "WS-6COKX55H",
+        "kategori": "workstation",
+        "waktuOpen": "2026-08-18T07:00:21.284Z",
+        "waktuSelesai": "2026-08-21T03:27:41.416Z",
+        "cpTipe": "pic",
+        "cpNama": "tio",
+        "cpTelp": "088888888999",
+        "jenisGangguan": "Kerusakan Perangkat",
+        "sumberPenyebab": "Workstation",
+        "metodePenanganan": "Penanganan Teknisi",
+        "wsCabang": "PADANG PANJANG",
+        "wsTanggalMasuk": "2026-08-17T02:59:00.000Z",
+        "wsNoSurat": "SR/00/XX/2026900909",
+        "wsMerekKomputer": "[Workstation - All in One] Fujitsu",
+        "wsCapem": "UNANDI",
+        "wsKelengkapan": "Adapter",
+        "wsSnKomputer": "SSN8998989099009",
+        "wsKerusakan": "lklkklkl",
+        "wsTglKeVendor": null,
+        "wsVendor": null,
+        "wsTglSelesaiVendor": null,
+        "wsTglKembaliKeCabang": null,
+        "wsPicTerima": null,
+        "status": "selesai",
+        "statusSupervisi": "belum",
+        "ownerUserId": "cmso7dl7u0000uncc5qtqlthp",
+        "keterangan": null,
+        "createdAt": "2026-08-18T07:00:21.284Z"
+      },
+      {
+        "id": "cmsyfnxty0001p001ixodcu93",
+        "noTiket": "WS-PTQFKRAM",
+        "kategori": "workstation",
+        "waktuOpen": "2026-08-18T09:01:16.678Z",
+        "waktuSelesai": "2026-08-18T09:26:43.266Z",
+        "cpTipe": "pic",
+        "cpNama": "addasasdads",
+        "cpTelp": "099090990090",
+        "jenisGangguan": "Kerusakan Perangkat",
+        "sumberPenyebab": "Workstation",
+        "metodePenanganan": "Penanganan Teknisi",
+        "wsCabang": "PADANG PANJANG",
+        "wsTanggalMasuk": "2026-08-17T12:00:00.000Z",
+        "wsNoSurat": "SR/00/XX/202690090000",
+        "wsMerekKomputer": "[Router - Tes]",
+        "wsCapem": "UNAND",
+        "wsKelengkapan": "op, Kayu, kaki",
+        "wsSnKomputer": "SSN89989899pp",
+        "wsKerusakan": "adadsasdasd\n[Catatan Tambahan: TES: TES1 | COBA: COBA3]",
+        "wsTglKeVendor": "2026-08-18T09:07:27.509Z",
+        "wsVendor": "Vendor Lenovo (PIC: kmmkmk) (PIC: ddss) (PIC: ddss)",
+        "wsTglSelesaiVendor": "2026-08-18T09:12:59.627Z",
+        "wsTglKembaliKeCabang": "2026-08-18T09:13:08.243Z",
+        "wsPicTerima": "Ahmad",
+        "status": "selesai",
+        "statusSupervisi": "belum",
+        "ownerUserId": "cmso7dl7u0000uncc5qtqlthp",
+        "keterangan": null,
+        "createdAt": "2026-08-18T09:01:16.678Z"
+      },
+      {
+        "id": "cmsybfphc000hpc01em5r0j2o",
+        "noTiket": "WS-2M59QT3O",
+        "kategori": "workstation",
+        "waktuOpen": "2026-08-18T07:02:54.144Z",
+        "waktuSelesai": "2026-08-18T09:37:03.870Z",
+        "cpTipe": "pic",
+        "cpNama": "mkmkkmmk",
+        "cpTelp": "090909000990",
+        "jenisGangguan": "Kerusakan Perangkat",
+        "sumberPenyebab": "Workstation",
+        "metodePenanganan": "Penanganan Teknisi",
+        "wsCabang": "PADANG PANJANG",
+        "wsTanggalMasuk": "2026-08-16T20:02:00.000Z",
+        "wsNoSurat": "SR/00/XX/2026",
+        "wsMerekKomputer": "[Router - Tes]",
+        "wsCapem": "daiwjiakk",
+        "wsKelengkapan": "Dus, Kayu, kaki",
+        "wsSnKomputer": "SSN89989899",
+        "wsKerusakan": "kmkmmkkk\n[Catatan Tambahan: TES: TES3 | COBA: COBA1 | COBA: COBA3]",
+        "wsTglKeVendor": null,
+        "wsVendor": null,
+        "wsTglSelesaiVendor": null,
+        "wsTglKembaliKeCabang": "2026-08-18T08:10:28.048Z",
+        "wsPicTerima": "Dayat",
+        "status": "selesai",
+        "statusSupervisi": "belum",
+        "ownerUserId": "cmso7dl7u0000uncc5qtqlthp",
+        "keterangan": null,
+        "createdAt": "2026-08-18T07:02:54.144Z"
+      },
+      {
+        "id": "cmt0z5l7l0005mg01xdqbmmfe",
+        "noTiket": "WS-ORYO5WE9",
+        "kategori": "workstation",
+        "waktuOpen": "2026-08-20T03:42:25.185Z",
+        "waktuSelesai": "2026-08-21T01:37:06.173Z",
+        "cpTipe": "pic",
+        "cpNama": "Teguh",
+        "cpTelp": "0888888888",
+        "jenisGangguan": "Kerusakan Perangkat",
+        "sumberPenyebab": "Workstation",
+        "metodePenanganan": "Penanganan Teknisi",
+        "wsCabang": "PARIAMAN",
+        "wsTanggalMasuk": "2026-08-20T03:41:00.000Z",
+        "wsNoSurat": "-",
+        "wsMerekKomputer": "[Workstation - Desktop] HP",
+        "wsCapem": "-",
+        "wsKelengkapan": "-",
+        "wsSnKomputer": "SGH214T96T",
+        "wsKerusakan": "Hardisk Rusak",
+        "wsTglKeVendor": null,
+        "wsVendor": null,
+        "wsTglSelesaiVendor": null,
+        "wsTglKembaliKeCabang": null,
+        "wsPicTerima": null,
+        "status": "selesai",
+        "statusSupervisi": "belum",
+        "ownerUserId": "cmso7dl7u0000uncc5qtqlthp",
+        "keterangan": null,
+        "createdAt": "2026-08-20T03:42:25.185Z"
+      },
+      {
+        "id": "cmt0zloqs000bmg019s1ilege",
+        "noTiket": "WS-NP6YUXE4",
+        "kategori": "workstation",
+        "waktuOpen": "2026-08-20T03:54:56.260Z",
+        "waktuSelesai": "2026-08-21T02:40:51.183Z",
+        "cpTipe": "pic",
+        "cpNama": "mkmkkmmk",
+        "cpTelp": "081290909900",
+        "jenisGangguan": "Kerusakan Perangkat",
+        "sumberPenyebab": "Workstation",
+        "metodePenanganan": "Penanganan Teknisi",
+        "wsCabang": "BANDUNG",
+        "wsTanggalMasuk": "2026-08-20T10:54:00.000Z",
+        "wsNoSurat": "SR/skdks",
+        "wsMerekKomputer": "[Workstation] Lenovo",
+        "wsCapem": "UNANDI",
+        "wsKelengkapan": "Dus",
+        "wsSnKomputer": "SSN899899",
+        "wsKerusakan": "kmkmkkmmk",
+        "wsTglKeVendor": null,
+        "wsVendor": null,
+        "wsTglSelesaiVendor": null,
+        "wsTglKembaliKeCabang": "2026-08-21T02:40:59.758Z",
+        "wsPicTerima": "Zakat",
+        "status": "selesai",
+        "statusSupervisi": "belum",
+        "ownerUserId": "cmso7dl7u0000uncc5qtqlthp",
+        "keterangan": "kookok",
+        "createdAt": "2026-08-20T03:54:56.260Z"
+      },
+      {
+        "id": "cmt0z3tc40001mg01snpv1q9a",
+        "noTiket": "WS-15W8XY2X",
+        "kategori": "workstation",
+        "waktuOpen": "2026-08-20T03:41:02.405Z",
+        "waktuSelesai": "2026-08-21T03:27:00.342Z",
+        "cpTipe": "pic",
+        "cpNama": "Teguh",
+        "cpTelp": "08888888888",
+        "jenisGangguan": "Kerusakan Perangkat",
+        "sumberPenyebab": "Workstation",
+        "metodePenanganan": "Penanganan Teknisi",
+        "wsCabang": "ALAHAN PANJANG",
+        "wsTanggalMasuk": "2026-08-20T03:39:00.000Z",
+        "wsNoSurat": "-",
+        "wsMerekKomputer": "[Mesin EDC]",
+        "wsCapem": "-",
+        "wsKelengkapan": "-",
+        "wsSnKomputer": "SGH214T95W",
+        "wsKerusakan": "Mainboard Hangus,Mainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard Hangus",
+        "wsTglKeVendor": "2026-08-21T03:26:14.073Z",
+        "wsVendor": "PT Visionet",
+        "wsTglSelesaiVendor": "2026-08-21T03:26:46.097Z",
+        "wsTglKembaliKeCabang": "2026-08-21T03:27:09.800Z",
+        "wsPicTerima": "Dayat",
+        "status": "selesai",
+        "statusSupervisi": "belum",
+        "ownerUserId": "cmso7dl7u0000uncc5qtqlthp",
+        "keterangan": null,
+        "createdAt": "2026-08-20T03:41:02.405Z"
+      }
+    ],
+    "ticketActivities": [
+      {
+        "id": "cmsybcfj90005pc01kfi7hr6h",
+        "ticketId": "cmsybcfj70003pc012o9k4hts",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T07:00:21.286Z",
+        "teks": "Menerima Perangkat",
+        "createdAt": "2026-08-18T07:00:21.286Z"
+      },
+      {
+        "id": "cmsybde7u0007pc01xen4dl8s",
+        "ticketId": "cmsybcfj70003pc012o9k4hts",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T07:01:06.234Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/2026 / SN: SSN8998989)",
+        "createdAt": "2026-08-18T07:01:06.234Z"
+      },
+      {
+        "id": "cmsybdkod0009pc01v6i5nkrl",
+        "ticketId": "cmsybcfj70003pc012o9k4hts",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T07:01:14.606Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/2026 / SN: SSN8998989)",
+        "createdAt": "2026-08-18T07:01:14.606Z"
+      },
+      {
+        "id": "cmsybdz44000bpc01cw4px2fd",
+        "ticketId": "cmsybcfj70003pc012o9k4hts",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T07:01:33.316Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/2026900909 / SN: SSN8998989)",
+        "createdAt": "2026-08-18T07:01:33.316Z"
+      },
+      {
+        "id": "cmsybeb1l000dpc0182ddlyqr",
+        "ticketId": "cmsybcfj70003pc012o9k4hts",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T07:01:48.777Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/2026900909 / SN: SSN8998989099009)",
+        "createdAt": "2026-08-18T07:01:48.777Z"
+      },
+      {
+        "id": "cmsybehgh000fpc01ma2lrkp7",
+        "ticketId": "cmsybcfj70003pc012o9k4hts",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T07:01:57.090Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/2026900909 / SN: SSN8998989099009)",
+        "createdAt": "2026-08-18T07:01:57.090Z"
+      },
+      {
+        "id": "cmsybfphd000jpc01wrb3wb1f",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T07:02:54.145Z",
+        "teks": "Menerima Router",
+        "createdAt": "2026-08-18T07:02:54.145Z"
+      },
+      {
+        "id": "cmsydoba30001lm016hdo9yje",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T08:05:34.876Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/2026 / SN: SSN899898)",
+        "createdAt": "2026-08-18T08:05:34.876Z"
+      },
+      {
+        "id": "cmsydpdco0003lm015ny5e103",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T08:06:24.217Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/2026 / SN: SSN899898)",
+        "createdAt": "2026-08-18T08:06:24.217Z"
+      },
+      {
+        "id": "cmsydulig0005lm01z0v8t66q",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T08:10:28.072Z",
+        "teks": "Penyerahan ke Cabang: Diterima oleh Dayat",
+        "createdAt": "2026-08-18T08:10:28.072Z"
+      },
+      {
+        "id": "cmsyecfll0001p001108re9b5",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T08:24:20.218Z",
+        "teks": "Memperbarui rincian data tiket:\n- Kelengkapan: 'Dus, Kayu' ➔ 'Dus, Kayu, kaki'",
+        "createdAt": "2026-08-18T08:24:20.218Z"
+      },
+      {
+        "id": "cmsyf7y130003p0010x1t7n7i",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T08:48:50.440Z",
+        "teks": "Memperbarui rincian data tiket:\n- Serial Number (SN): 'SSN899898' ➔ 'SSN89989899'",
+        "createdAt": "2026-08-18T08:48:50.440Z"
+      },
+      {
+        "id": "cmsyf83k60005p001ya1el9u4",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T08:48:57.606Z",
+        "teks": "Memperbarui rincian data tiket:\n- Kerusakan: 'kmkmmkkk\n[Catatan Tambahan: TES: TES1 | COBA: COBA1]' ➔ 'kmkmmkkk\n[Catatan Tambahan: TES: TES1 | COBA: COBA1 | TES: TES3]'",
+        "createdAt": "2026-08-18T08:48:57.606Z"
+      },
+      {
+        "id": "cmsyf8oym0007p001hn8bmmdh",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T08:49:25.342Z",
+        "teks": "Memperbarui rincian data tiket:\n- Kerusakan: 'kmkmmkkk\n[Catatan Tambahan: TES: TES1 | COBA: COBA1 | TES: TES3]' ➔ 'kmkmmkkk\n[Catatan Tambahan: TES: TES3 | COBA: COBA1 | COBA: COBA3]'",
+        "createdAt": "2026-08-18T08:49:25.342Z"
+      },
+      {
+        "id": "cmsyfnxu00003p001kke4l3kw",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:01:16.680Z",
+        "teks": "Menerima Router",
+        "createdAt": "2026-08-18T09:01:16.680Z"
+      },
+      {
+        "id": "cmsyfoal30005p001y5d4abfx",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:01:33.208Z",
+        "teks": "Memperbarui rincian data tiket:\n- TES: 'TES1' ➔ 'TES2'",
+        "createdAt": "2026-08-18T09:01:33.208Z"
+      },
+      {
+        "id": "cmsyfohpp0007p001t34rofg2",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:01:42.445Z",
+        "teks": "Memperbarui rincian data tiket:\n- TES: 'TES2' ➔ 'TES1'\n- COBA: 'COBA2' ➔ 'COBA3'",
+        "createdAt": "2026-08-18T09:01:42.445Z"
+      },
+      {
+        "id": "cmsyfowv60009p001bo2yar9v",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:02:02.082Z",
+        "teks": "Memperbarui rincian data tiket:\n- Capem: 'UNANDI' ➔ 'UNAND'\n- No Surat: 'SR/00/XX/2026900909' ➔ 'SR/00/XX/202690090000'\n- Serial Number (SN): 'SSN89989899' ➔ 'SSN89989899pp'\n- Kelengkapan: 'Dus, Kayu, kaki' ➔ 'op, Kayu, kaki'",
+        "createdAt": "2026-08-18T09:02:02.082Z"
+      },
+      {
+        "id": "cmsyfp846000bp001mvu0wg8w",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:02:16.662Z",
+        "teks": "Penyerahan ke Vendor Vendor Lenovo (PIC: kmmkmk)",
+        "createdAt": "2026-08-18T09:02:16.662Z"
+      },
+      {
+        "id": "cmsyfpbtd000dp001pu7fhkie",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:02:21.458Z",
+        "teks": "Pengembalian dari Vendor Vendor Lenovo (PIC: kmmkmk)",
+        "createdAt": "2026-08-18T09:02:21.458Z"
+      },
+      {
+        "id": "cmsyfq4ns000fp001ao74zxcx",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:02:58.841Z",
+        "teks": "Memperbarui rincian data tiket (SR/00/XX/202690090000 / SN: SSN89989899pp)",
+        "createdAt": "2026-08-18T09:02:58.841Z"
+      },
+      {
+        "id": "cmsyfvlq60001pn01x592c6kw",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:07:14.238Z",
+        "teks": "Penyerahan ke Vendor Vendor Lenovo (PIC: kmmkmk)",
+        "createdAt": "2026-08-18T09:07:14.238Z"
+      },
+      {
+        "id": "cmsyfvsdm0003pn01vnzd9uab",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:07:22.859Z",
+        "teks": "Penyerahan ke Vendor Vendor Lenovo (PIC: kmmkmk) (PIC: ddss)",
+        "createdAt": "2026-08-18T09:07:22.859Z"
+      },
+      {
+        "id": "cmsyfvvz70005pn01y7dwa0qu",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:07:27.523Z",
+        "teks": "Penyerahan ke Vendor Vendor Lenovo (PIC: kmmkmk) (PIC: ddss) (PIC: ddss)",
+        "createdAt": "2026-08-18T09:07:27.523Z"
+      },
+      {
+        "id": "cmsyg308t0001qp0165a9ur6x",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:12:59.645Z",
+        "teks": "Pengembalian dari Vendor Vendor Lenovo (PIC: kmmkmk) (PIC: ddss) (PIC: ddss)",
+        "createdAt": "2026-08-18T09:12:59.645Z"
+      },
+      {
+        "id": "cmsyg36w60003qp01dz3bg14q",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:13:08.262Z",
+        "teks": "Penyerahan ke Cabang: Diterima oleh Ahmad",
+        "createdAt": "2026-08-18T09:13:08.262Z"
+      },
+      {
+        "id": "cmsygknr90001l001shroisvx",
+        "ticketId": "cmsyfnxty0001p001ixodcu93",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:26:43.270Z",
+        "teks": "Tiket ditutup (Selesai Penanganan) oleh USER: Afrinaldi",
+        "createdAt": "2026-08-18T09:26:43.270Z"
+      },
+      {
+        "id": "cmsygxyma0001l801qiit6h0n",
+        "ticketId": "cmsybfphc000hpc01em5r0j2o",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-18T09:37:03.874Z",
+        "teks": "Tiket ditutup (Selesai Penanganan) oleh USER: Afrinaldi",
+        "createdAt": "2026-08-18T09:37:03.874Z"
+      },
+      {
+        "id": "cmt0z3tc70003mg01d1cp6u2f",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-20T03:41:02.407Z",
+        "teks": "Menerima Perangkat",
+        "createdAt": "2026-08-20T03:41:02.407Z"
+      },
+      {
+        "id": "cmt0z5l7m0007mg01b9cfmiax",
+        "ticketId": "cmt0z5l7l0005mg01xdqbmmfe",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-20T03:42:25.186Z",
+        "teks": "Menerima Perangkat",
+        "createdAt": "2026-08-20T03:42:25.186Z"
+      },
+      {
+        "id": "cmt0z6y480009mg01ezxjfwu3",
+        "ticketId": "cmt0z5l7l0005mg01xdqbmmfe",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-20T03:43:28.569Z",
+        "teks": "Memperbarui rincian data tiket:\n- Merek/Perangkat: '[Workstation] HP' ➔ '[Workstation - Desktop] HP'",
+        "createdAt": "2026-08-20T03:43:28.569Z"
+      },
+      {
+        "id": "cmt0zloqv000dmg01uj7lmgla",
+        "ticketId": "cmt0zloqs000bmg019s1ilege",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-20T03:54:56.263Z",
+        "teks": "Menerima Perangkat",
+        "createdAt": "2026-08-20T03:54:56.263Z"
+      },
+      {
+        "id": "cmt2a4a690001mg01bjyyauob",
+        "ticketId": "cmt0z5l7l0005mg01xdqbmmfe",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T01:37:06.177Z",
+        "teks": "Tiket ditutup (Selesai Penanganan) oleh USER: Afrinaldi",
+        "createdAt": "2026-08-21T01:37:06.177Z"
+      },
+      {
+        "id": "cmt2ce9kj0001ql01vustcdjc",
+        "ticketId": "cmt0zloqs000bmg019s1ilege",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T02:40:51.187Z",
+        "teks": "Tiket ditutup (Selesai Penanganan) oleh USER: Afrinaldi",
+        "createdAt": "2026-08-21T02:40:51.187Z"
+      },
+      {
+        "id": "cmt2ceg7b0003ql01h2eije43",
+        "ticketId": "cmt0zloqs000bmg019s1ilege",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T02:40:59.783Z",
+        "teks": "Penyerahan ke Cabang: Diterima oleh Zakat (kookok)",
+        "createdAt": "2026-08-21T02:40:59.783Z"
+      },
+      {
+        "id": "cmt2cif3l0007ql01409q3q3z",
+        "ticketId": "cmt2cif3h0005ql01nba9u27t",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T02:44:04.977Z",
+        "teks": "Menerima Perangkat",
+        "createdAt": "2026-08-21T02:44:04.977Z"
+      },
+      {
+        "id": "cmt2cirt00009ql01cm8nuptx",
+        "ticketId": "cmt2cif3h0005ql01nba9u27t",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T02:44:21.444Z",
+        "teks": "Tiket ditutup (Selesai Penanganan) oleh USER: Afrinaldi",
+        "createdAt": "2026-08-21T02:44:21.444Z"
+      },
+      {
+        "id": "cmt2cix9m000bql01m1gi63w0",
+        "ticketId": "cmt2cif3h0005ql01nba9u27t",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T02:44:28.523Z",
+        "teks": "Penyerahan ke Cabang: Diterima oleh kmmmkkm (kmkmkm)",
+        "createdAt": "2026-08-21T02:44:28.523Z"
+      },
+      {
+        "id": "cmt2dz9tk0001n701rsxprwvi",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:25:10.904Z",
+        "teks": "Memperbarui rincian data tiket:\n- Cabang: 'PARIAMAN' ➔ 'ALAHAN PANJANG'\n- Merek/Perangkat: '[Workstation - Desktop] HP' ➔ '[Mesin EDC]'\n- Kerusakan: 'Mainboard Hangus' ➔ 'Mainboard Hangus,Mainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard HangusMainboard Hangus'\n- Nama PIC: 'Teguhu' ➔ 'Teguh'",
+        "createdAt": "2026-08-21T03:25:10.904Z"
+      },
+      {
+        "id": "cmt2dzv450003n701pe6xni9x",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:25:38.502Z",
+        "teks": "Penyerahan ke Vendor PT Infomedia",
+        "createdAt": "2026-08-21T03:25:38.502Z"
+      },
+      {
+        "id": "cmt2dzxwj0005n701d6xxo3gk",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:25:42.115Z",
+        "teks": "Pengembalian dari Vendor PT Infomedia",
+        "createdAt": "2026-08-21T03:25:42.115Z"
+      },
+      {
+        "id": "cmt2e0mko0007n701dt1bc2lv",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:26:14.088Z",
+        "teks": "Penyerahan ke Vendor PT Visionet",
+        "createdAt": "2026-08-21T03:26:14.088Z"
+      },
+      {
+        "id": "cmt2e1cmw0009n701rpr9kbtj",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:26:47.864Z",
+        "teks": "Pengembalian dari Vendor PT Visionet",
+        "createdAt": "2026-08-21T03:26:47.864Z"
+      },
+      {
+        "id": "cmt2e1m9k000bn7010wrbbyfl",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:27:00.345Z",
+        "teks": "Tiket ditutup (Selesai Penanganan) oleh USER: Afrinaldi",
+        "createdAt": "2026-08-21T03:27:00.345Z"
+      },
+      {
+        "id": "cmt2e1tkl000dn7010ho4q2qn",
+        "ticketId": "cmt0z3tc40001mg01snpv1q9a",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:27:09.813Z",
+        "teks": "Penyerahan ke Cabang: Diterima oleh Dayat",
+        "createdAt": "2026-08-21T03:27:09.813Z"
+      },
+      {
+        "id": "cmt2e2hyj000fn701thlg5erb",
+        "ticketId": "cmsybcfj70003pc012o9k4hts",
+        "userId": "cmso7dl7u0000uncc5qtqlthp",
+        "waktu": "2026-08-21T03:27:41.419Z",
+        "teks": "Tiket ditutup (Selesai Penanganan) oleh USER: Afrinaldi",
+        "createdAt": "2026-08-21T03:27:41.419Z"
+      }
+    ],
+    "serverAccessLog": [
+      {
+        "id": "cmt2er9mm000vn701pnrg6a8l",
+        "namaOrang": "fawwaz wiyoga",
+        "instansi": "unand",
+        "namaPic": "IBNU SAUKI",
+        "keperluan": "maintence server dan ac, pengecekan kabel, penggantian sparepart",
+        "jenisAkses": "masuk",
+        "waktuAkses": "2026-08-21T03:47:38.187Z",
+        "waktuKeluar": "2026-08-21T03:48:06.584Z",
+        "fotoUrl": "data:image/jpeg;base64,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",
+        "ttdUrl": "data:image/png;base64,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",
+        "catatanOleh": "cmso7dlf30005unccw3by9uur",
+        "statusApproval": "pending",
+        "approvedBy": null,
+        "createdAt": "2026-08-21T03:46:57.023Z"
+      }
+    ]
+  }
+}

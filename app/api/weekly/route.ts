@@ -18,15 +18,18 @@ export async function GET(req: Request) {
     sp.get("to")
   );
 
+  const filter = {
+    from,
+    to,
+    cabang: sp.get("cabang"),
+    status: sp.get("status"),
+    search: sp.get("search"),
+    jenisPerangkat: sp.get("jenisPerangkat"),
+  };
+
   const [items, total] = await Promise.all([
-    listWorkstationWeeklyTickets({
-      from,
-      to,
-      cabang: sp.get("cabang"),
-      status: sp.get("status"),
-      search: sp.get("search"),
-    }),
-    countWeeklyTickets({ from, to }),
+    listWorkstationWeeklyTickets(filter),
+    countWeeklyTickets(filter),
   ]);
 
   return NextResponse.json({ items, total, from: fromKey, to: toKey });

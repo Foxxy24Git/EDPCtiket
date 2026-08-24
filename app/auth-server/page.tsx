@@ -348,13 +348,6 @@ export default function AuthServerPage() {
             <Clock className="w-4 h-4 text-primary" />
             <span>{timeStr}</span>
           </div>
-          <button
-            onClick={fetchPreRegistered}
-            className="p-2.5 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl text-slate-700 transition-all border border-slate-200 cursor-pointer"
-            title="Refresh Daftar Tamu"
-          >
-            <RefreshCw className={`w-4 h-4 ${loadingList ? "animate-spin text-primary" : ""}`} />
-          </button>
         </div>
       </header>
 
@@ -364,11 +357,20 @@ export default function AuthServerPage() {
         {/* KOLOM KIRI: STEP 1 — Pilih Tamu Terdaftar */}
         <div className="md:col-span-1 lg:col-span-5 space-y-4">
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-            <div className="flex items-center gap-2.5 border-b border-slate-100 pb-3">
-              <div className="w-8 h-8 rounded-xl bg-primary-50 text-primary font-bold flex items-center justify-center border border-primary-100 text-sm">
-                1
+            <div className="flex items-center justify-between gap-2.5 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-primary-50 text-primary font-bold flex items-center justify-center border border-primary-100 text-sm">
+                  1
+                </div>
+                <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">Pilih Tamu Terdaftar</h2>
               </div>
-              <h2 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">Pilih Tamu Terdaftar</h2>
+              <button
+                onClick={fetchPreRegistered}
+                className="p-2 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl text-slate-700 transition-all border border-slate-200 cursor-pointer shrink-0"
+                title="Refresh Daftar Tamu"
+              >
+                <RefreshCw className={`w-4 h-4 ${loadingList ? "animate-spin text-primary" : ""}`} />
+              </button>
             </div>
 
             {loadingList ? (

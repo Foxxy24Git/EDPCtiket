@@ -132,6 +132,34 @@ function CollapsibleNavItem({
 export function Sidebar({ role, logoUrl }: { role: Role; logoUrl?: string | null }) {
   const pathname = usePathname();
   const items = NAV_ITEMS.filter((item) => !item.roles || item.roles.includes(role));
+  const [pendingSupervisiCount, setPendingSupervisiCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (role !== "supervisi") return;
+
+    let isMounted = true;
+    async function fetchPendingCount() {
+      try {
+        const res = await fetch("/api/tickets?statusSupervisi=belum");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.items && Array.isArray(data.items)) {
+            setPendingSupervisiCount(data.items.length);
+          }
+        }
+      } catch (e) {
+        console.error("Gagal fetch statistik tiket supervisi:", e);
+      }
+    }
+
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 12000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, [role, pathname]);
 
   return (
     <aside
@@ -180,7 +208,7 @@ export function Sidebar({ role, logoUrl }: { role: Role; logoUrl?: string | null
                     className="relative flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 text-primary-100 hover:bg-white/10 hover:text-white"
                   >
                     <Icon className="w-4 h-4 shrink-0 relative z-10 text-primary-300" />
-                    <span className="relative z-10">{item.label}</span>
+                    <span className="relative z-10 flex-1">{item.label}</span>
                   </a>
                 </li>
               );
@@ -214,7 +242,12 @@ export function Sidebar({ role, logoUrl }: { role: Role; logoUrl?: string | null
                       isActive ? "text-accent" : "text-primary-300"
                     )}
                   />
-                  <span className="relative z-10">{item.label}</span>
+                  <span className="relative z-10 flex-1">{item.label}</span>
+                  {item.href === "/supervisi" && pendingSupervisiCount > 0 && (
+                    <span className="relative z-10 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-extrabold text-white bg-red-500 rounded-full min-w-[18px] h-4 shadow-sm animate-pulse">
+                      {pendingSupervisiCount}
+                    </span>
+                  )}
                 </Link>
               </li>
             );

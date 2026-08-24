@@ -2,6 +2,7 @@ import { requireSession } from "@/lib/session";
 import { prisma } from "@/lib/prisma";
 import { countWeeklyTickets, listWorkstationWeeklyTickets } from "@/lib/ticketQueries";
 import { resolveRange } from "@/lib/weeklyRange";
+import { getDeviceTypeNamesFromDb } from "@/lib/masterOptions";
 import { WeeklyMonitoringClient } from "@/components/weekly-monitoring/WeeklyMonitoringClient";
 
 export const dynamic = "force-dynamic";
@@ -12,13 +13,14 @@ export default async function WeeklyMonitoringPage() {
   // Rentang default 7 hari (rolling) untuk muat awal.
   const { from, to, fromKey, toKey } = resolveRange(null, null);
 
-  const [items, total, workstationCabangRows] = await Promise.all([
+  const [items, total, workstationCabangRows, initialDeviceOptions] = await Promise.all([
     listWorkstationWeeklyTickets({ from, to }),
     countWeeklyTickets({ from, to }),
     prisma.workstationMaster.findMany({
       orderBy: { namaCabang: "asc" },
       select: { id: true, namaCabang: true },
     }),
+    getDeviceTypeNamesFromDb(),
   ]);
 
   const wsCabangOptions = workstationCabangRows.map((c) => c.namaCabang);
@@ -38,6 +40,7 @@ export default async function WeeklyMonitoringPage() {
         initialFrom={fromKey}
         initialTo={toKey}
         wsCabangOptions={wsCabangOptions}
+        initialDeviceOptions={initialDeviceOptions}
       />
     </div>
   );

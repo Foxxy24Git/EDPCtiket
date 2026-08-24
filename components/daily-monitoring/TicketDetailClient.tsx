@@ -387,6 +387,15 @@ export function TicketDetailClient({
     e.preventDefault();
     setEditErr("");
 
+    const activeDev = deviceTypesList.find((d) => d.id === editDeviceId);
+    if (activeDev && activeDev.subtypes && activeDev.subtypes.length > 0) {
+      if (!editSubtype || !editSubtype.trim()) {
+        return setEditErr(
+          `Sub-tipe / jenis ${activeDev.nama} (misal: ${activeDev.subtypes.join(", ")}) wajib dipilih.`
+        );
+      }
+    }
+
     // Validasi field dinamis dari activeFields
     for (const field of activeFields) {
       if (field.id === "capem") continue;
@@ -490,10 +499,14 @@ export function TicketDetailClient({
       changes.push(`No Telp/WA: '${ticket.cpTelp || "—"}' ➔ '${editCpTelp.trim()}'`);
     }
 
-    const activityText =
-      changes.length > 0
-        ? `Memperbarui rincian data tiket:\n- ` + changes.join("\n- ")
-        : `Memperbarui rincian data tiket (${editNoSurat.trim()} / SN: ${editSn.trim()})`;
+    // Jika tidak ada perubahan sama sekali, tutup modal tanpa mencatat log
+    if (changes.length === 0) {
+      setEditSaving(false);
+      setEditModalOpen(false);
+      return;
+    }
+
+    const activityText = `Memperbarui rincian data tiket:\n- ` + changes.join("\n- ");
 
     setEditSaving(true);
     try {
@@ -692,12 +705,36 @@ export function TicketDetailClient({
         </button>
       </div>
 
-      {role === "supervisi" && (
+      {(role === "supervisi" || readOnly) && (
         <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-medium px-4 py-2.5 rounded-lg border border-blue-200 shadow-sm">
           <Info className="w-4 h-4 shrink-0 text-blue-600" />
           <span>
-            <strong>Mode Supervisi (Read-Only):</strong> Anda sedang melihat rincian detail dan kronologi penanganan tiket ini. Modifikasi data hanya dapat dilakukan oleh IT Support.
+            <strong>Mode Read-Only ({readOnly ? "Weekly Monitoring" : "Supervisi"}):</strong> Anda sedang melihat rincian detail dan kronologi penanganan tiket ini dalam mode baca saja. Modifikasi data hanya dapat dilakukan di Daily Monitoring oleh IT Support.
           </span>
+        </div>
+      )}
+
+      {canMutate && isSelesai && !isSentToCabang && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-emerald-50 text-emerald-800 text-xs font-semibold px-4 py-3 rounded-xl border border-emerald-200 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Building className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>Tiket telah di-<strong>Close (Selesai)</strong>. Silakan tekan tombol <strong>Penyerahan ke Cabang</strong> untuk mencatat penyerahan perangkat.</span>
+          </div>
+          <Button size="sm" onClick={() => setCabangModalOpen(true)} className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs shrink-0 font-bold">
+            <Building className="w-3.5 h-3.5 mr-1" /> Penyerahan ke Cabang
+          </Button>
+        </div>
+      )}
+
+      {isSelesai && isSentToCabang && (
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-blue-50 text-blue-800 text-xs font-semibold px-4 py-3 rounded-xl border border-blue-200 shadow-sm">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+            <span>Perangkat telah diserahkan ke Cabang (Diterima oleh <strong>{ticket.wsPicTerima || "—"}</strong>). Anda kini dapat membuat <strong>Berita Acara</strong>.</span>
+          </div>
+          <Button size="sm" onClick={() => router.push(`/rekap-laporan?tab=berita-acara&ticketId=${ticket.id}`)} className="bg-blue-600 hover:bg-blue-700 text-white text-xs shrink-0 font-bold">
+            <FileText className="w-3.5 h-3.5 mr-1" /> Buat Berita Acara
+          </Button>
         </div>
       )}
 
@@ -846,47 +883,38 @@ export function TicketDetailClient({
               </Button>
             )}
 
-            {/* Tombol Penyerahan ke Cabang */}
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={isCurrentlyInVendor || isSentToCabang || isSelesai}
-              onClick={() => {
-                if (isCurrentlyInVendor) {
-                  alert("Perangkat saat ini sedang di-servis di Vendor! Silakan tekan tombol 'Terima dari Vendor' terlebih dahulu sebelum melakukan penyerahan ke cabang.");
-                  return;
-                }
-                if (isSentToCabang || isSelesai) return;
-                setCabangErr("");
-                setCabangModalOpen(true);
-              }}
-              className={
-                isCurrentlyInVendor || isSentToCabang || isSelesai
-                  ? "border-gray-200 text-gray-400 bg-gray-50 opacity-60 cursor-not-allowed"
-                  : "border-emerald-600 text-emerald-700 hover:bg-emerald-50"
-              }
-              title={
-                isSelesai
-                  ? "Tiket sudah Selesai (Closed)."
-                  : isSentToCabang
-                  ? "Perangkat sudah diserahkan ke Cabang."
-                  : isCurrentlyInVendor
-                  ? "Perangkat sedang di Vendor. Harus 'Terima dari Vendor' dulu!"
-                  : "Penyerahan Perangkat ke Cabang"
-              }
-            >
-              <Building className="w-4 h-4 text-emerald-600" /> Penyerahan ke Cabang
-            </Button>
+            {/* Tombol Penyerahan ke Cabang (Hanya keluar setelah Close Tiket dan sebelum Penyerahan ke Cabang) */}
+            {isSelesai && !isSentToCabang && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (isCurrentlyInVendor) {
+                    alert("Perangkat saat ini sedang di-servis di Vendor! Silakan tekan tombol 'Terima dari Vendor' terlebih dahulu.");
+                    return;
+                  }
+                  setCabangErr("");
+                  setCabangModalOpen(true);
+                }}
+                className="border-emerald-600 text-emerald-700 bg-emerald-50/50 hover:bg-emerald-100 font-bold"
+                title="Penyerahan Perangkat ke Cabang"
+              >
+                <Building className="w-4 h-4 text-emerald-600" /> Penyerahan ke Cabang
+              </Button>
+            )}
 
-            {/* Tombol Berita Acara (Mengarahkan ke Rekap Berita Acara dengan ticketId terpilih) */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => router.push(`/rekap-laporan?tab=berita-acara&ticketId=${ticket.id}`)}
-              className="border-blue-600 text-blue-700 hover:bg-blue-50"
-            >
-              <FileText className="w-4 h-4 text-blue-600" /> Berita Acara
-            </Button>
+            {/* Tombol Berita Acara (Hanya keluar setelah Close Tiket DAN Penyerahan ke Cabang sudah ditekan) */}
+            {isSelesai && isSentToCabang && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/rekap-laporan?tab=berita-acara&ticketId=${ticket.id}`)}
+                className="border-blue-600 text-blue-700 bg-blue-50/50 hover:bg-blue-100 font-bold"
+                title="Buat / Cetak Berita Acara Serah Terima"
+              >
+                <FileText className="w-4 h-4 text-blue-600" /> Berita Acara
+              </Button>
+            )}
 
             {/* Tombol Close Tiket */}
             {!isSelesai && (
@@ -1252,10 +1280,11 @@ export function TicketDetailClient({
               return (
                 <Select
                   label="Tipe / Sub-Judul"
+                  required
                   value={editSubtype}
                   onChange={(e) => setEditSubtype(e.target.value)}
                 >
-                  <option value="">— Pilih Sub-tipe —</option>
+                  <option value="">— Pilih Tipe / Sub-Judul (Wajib) —</option>
                   {activeDev.subtypes.map((sub) => (
                     <option key={sub} value={sub}>
                       {sub}

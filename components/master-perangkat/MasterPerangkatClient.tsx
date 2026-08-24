@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Plus,
   Trash2,
@@ -15,12 +16,16 @@ import {
   Monitor,
   CreditCard,
   Calendar,
+  Copy,
+  ChevronDown,
+  Layers,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { DAFTAR_CABANG_BANK_NAGARI } from "@/lib/constants";
 
 export interface CustomField {
   id: string;
@@ -69,6 +74,7 @@ export function MasterPerangkatClient() {
   // Selection
   const [selectedDeviceId, setSelectedDeviceId] = useState<string>("workstation");
   const [previewSubtype, setPreviewSubtype] = useState<string>("");
+  const [previewSubtypeOpen, setPreviewSubtypeOpen] = useState(false);
 
   // Input sementara Jenis Perangkat & Sub-tipe
   const [newDeviceName, setNewDeviceName] = useState("");
@@ -78,59 +84,9 @@ export function MasterPerangkatClient() {
   const [fieldLabel, setFieldLabel] = useState("");
   const [fieldType, setFieldType] = useState<"text" | "date" | "select" | "textarea">("text");
   const [fieldPlaceholder, setFieldPlaceholder] = useState("");
-  const [fieldOptionsInput, setFieldOptionsInput] = useState("");
 
-  // State Manage Opsi Dropdown Modal
-  const [editingOptionsFieldId, setEditingOptionsFieldId] = useState<string | null>(null);
-  const [tempOptions, setTempOptions] = useState<string[]>([]);
-  const [newOptionInput, setNewOptionInput] = useState("");
 
-  function handleOpenManageOptions(field: CustomField) {
-    setEditingOptionsFieldId(field.id);
-    setTempOptions(field.options && field.options.length > 0 ? [...field.options] : []);
-    setNewOptionInput("");
-  }
-
-  function handleAddOption() {
-    if (!newOptionInput.trim()) return;
-    const val = newOptionInput.trim();
-    if (tempOptions.includes(val)) return;
-    setTempOptions((prev) => [...prev, val]);
-    setNewOptionInput("");
-  }
-
-  function handleUpdateOptionText(index: number, newText: string) {
-    setTempOptions((prev) => {
-      const copy = [...prev];
-      copy[index] = newText;
-      return copy;
-    });
-  }
-
-  function handleRemoveOption(index: number) {
-    setTempOptions((prev) => prev.filter((_, i) => i !== index));
-  }
-
-  function handleSaveFieldOptions() {
-    if (!editingOptionsFieldId || !selectedDeviceId) return;
-
-    setDeviceTypes((prev) =>
-      prev.map((d) => {
-        if (d.id === selectedDeviceId) {
-          const fields = (d.customFields || []).map((f) => {
-            if (f.id === editingOptionsFieldId) {
-              return { ...f, options: tempOptions.filter((o) => o.trim().length > 0) };
-            }
-            return f;
-          });
-          return { ...d, customFields: fields };
-        }
-        return d;
-      })
-    );
-
-    setEditingOptionsFieldId(null);
-  }
+  const [dbCabangList, setDbCabangList] = useState<string[]>([]);
 
   useEffect(() => {
     fetchOptions();
@@ -139,9 +95,21 @@ export function MasterPerangkatClient() {
   async function fetchOptions() {
     setLoading(true);
     try {
-      const res = await fetch("/api/master-options");
-      if (res.ok) {
-        const data: MasterOptionsData = await res.json();
+      const [resOptions, resCabang] = await Promise.all([
+        fetch("/api/master-options"),
+        fetch("/api/workstation?limit=200"),
+      ]);
+
+      if (resCabang.ok) {
+        const dataCabang = await resCabang.json();
+        if (dataCabang.items && Array.isArray(dataCabang.items)) {
+          const cabangNames = dataCabang.items.map((c: { namaCabang: string }) => c.namaCabang).filter(Boolean);
+          setDbCabangList(cabangNames);
+        }
+      }
+
+      if (resOptions.ok) {
+        const data: MasterOptionsData = await resOptions.json();
         const loadedDevices = (data.deviceTypes || []).map((d) => {
           if (!d.customFields || d.customFields.length === 0) {
             return { ...d, customFields: DEFAULT_FIELDS_WORKSTATION };
@@ -266,19 +234,11 @@ export function MasterPerangkatClient() {
     const label = fieldLabel.trim();
     const id = label.toLowerCase().replace(/[^a-z0-9]+/g, "_");
 
-    const parsedOptions =
-      fieldType === "select"
-        ? fieldOptionsInput
-            .split(",")
-            .map((s) => s.trim())
-            .filter(Boolean)
-        : undefined;
-
     const newField: CustomField = {
       id,
       label,
       type: fieldType,
-      options: parsedOptions,
+      options: [],
       placeholder: fieldPlaceholder.trim() || undefined,
       required: true,
     };
@@ -296,7 +256,6 @@ export function MasterPerangkatClient() {
 
     setFieldLabel("");
     setFieldPlaceholder("");
-    setFieldOptionsInput("");
   }
 
   function handleMoveField(index: number, direction: "up" | "down") {
@@ -340,7 +299,7 @@ export function MasterPerangkatClient() {
 
   const selectedDevice = deviceTypes.find((d) => d.id === selectedDeviceId) || deviceTypes[0];
   const activeFields = selectedDevice?.customFields || DEFAULT_FIELDS_WORKSTATION;
-  const editingFieldObj = activeFields.find((f) => f.id === editingOptionsFieldId);
+  const activeCabangList = dbCabangList.length > 0 ? dbCabangList : DAFTAR_CABANG_BANK_NAGARI;
 
   return (
     <div className="space-y-6">
@@ -364,74 +323,6 @@ export function MasterPerangkatClient() {
         </div>
       </Modal>
 
-      {/* MODAL KELOLA OPSI DROPDOWN */}
-      <Modal
-        open={Boolean(editingOptionsFieldId)}
-        onClose={() => setEditingOptionsFieldId(null)}
-        title={`Kelola Opsi Dropdown: ${editingFieldObj?.label || ""}`}
-        size="md"
-      >
-        <div className="space-y-4 pt-1">
-          <p className="text-xs text-gray-500">
-            Tambahkan opsi baru, ubah teks opsi, atau hapus pilihan yang akan muncul pada dropdown form.
-          </p>
-
-          {/* Form Tambah Opsi Baru */}
-          <div className="flex gap-2">
-            <Input
-              placeholder="Tuliskan opsi baru (cth: TES4)..."
-              value={newOptionInput}
-              onChange={(e) => setNewOptionInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleAddOption();
-                }
-              }}
-              className="text-xs"
-            />
-            <Button size="sm" type="button" onClick={handleAddOption} className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0">
-              <Plus className="w-4 h-4 mr-1" /> Tambah
-            </Button>
-          </div>
-
-          {/* Daftar Opsi Saat Ini */}
-          <div className="space-y-2 max-h-60 overflow-y-auto border border-gray-100 rounded-xl p-3 bg-gray-50/50">
-            {tempOptions.length === 0 ? (
-              <p className="text-xs text-center text-gray-400 py-3">Belum ada pilihan opsi. Tambahkan di atas.</p>
-            ) : (
-              tempOptions.map((opt, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-white p-2 rounded-lg border border-gray-200 shadow-2xs">
-                  <span className="text-xs font-mono font-bold text-gray-400 w-6 text-center">{idx + 1}.</span>
-                  <Input
-                    value={opt}
-                    onChange={(e) => handleUpdateOptionText(idx, e.target.value)}
-                    className="text-xs h-8 bg-white border-gray-200 focus:border-indigo-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveOption(idx)}
-                    className="p-1 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                    title="Hapus Opsi Ini"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-2 border-t border-gray-100 pt-3">
-            <Button variant="secondary" size="sm" onClick={() => setEditingOptionsFieldId(null)}>
-              Batal
-            </Button>
-            <Button size="sm" onClick={handleSaveFieldOptions} className="bg-primary hover:bg-primary-600">
-              <Check className="w-4 h-4 mr-1" /> Simpan Opsi
-            </Button>
-          </div>
-        </div>
-      </Modal>
       {msg && (
         <div
           className={`p-3.5 text-xs rounded-xl border flex items-center justify-between shadow-sm ${
@@ -458,9 +349,6 @@ export function MasterPerangkatClient() {
           </p>
         </div>
         <div className="flex gap-2 shrink-0">
-          <Button variant="outline" size="sm" onClick={fetchOptions}>
-            <RefreshCw className="w-3.5 h-3.5 mr-1" /> Reset
-          </Button>
           <Button size="sm" loading={saving} onClick={handleSaveAll} className="bg-primary hover:bg-primary-600">
             <Save className="w-4 h-4 mr-1.5" /> Simpan Pengaturan Form
           </Button>
@@ -542,10 +430,10 @@ export function MasterPerangkatClient() {
                       key={sub}
                       type="button"
                       onClick={() => setPreviewSubtype(sub)}
-                      className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all ${
+                      className={`px-3.5 py-1.5 rounded-lg border text-xs font-semibold transition-all cursor-pointer ${
                         previewSubtype === sub
                           ? "border-primary bg-primary-50 text-primary font-bold shadow-xs"
-                          : "border-gray-200 text-gray-600 bg-white"
+                          : "border-gray-200 text-gray-600 bg-white hover:bg-gray-50"
                       }`}
                     >
                       {sub}
@@ -576,23 +464,35 @@ export function MasterPerangkatClient() {
 
                 if (field.type === "select") {
                   const opts =
-                    field.options && field.options.length > 0
+                    field.id === "cabang"
+                      ? activeCabangList
+                      : field.id === "merek"
+                      ? merekKomputer.length > 0 ? merekKomputer : (field.options && field.options.length > 0 ? field.options : ["Lenovo", "HP", "Dell", "Acer"])
+                      : field.options && field.options.length > 0
                       ? field.options
-                      : field.id === "cabang"
-                      ? ["PAYAKUMBUH", "BUKITTINGGI", "SOLOK", "CABANG UTAMA"]
-                      : ["Lenovo", "HP", "Dell", "Acer", "Asus", "Apple"];
+                      : [];
 
                   return (
                     <div key={field.id} className="space-y-1">
                       <label className="text-xs font-bold text-gray-700">
                         {field.label} {field.required && <span className="text-red-500">*</span>}
                       </label>
-                      <select disabled className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 bg-gray-50/70 text-gray-600">
-                        <option>— Pilih {field.label} —</option>
-                        {opts.map((o) => (
-                          <option key={o}>{o}</option>
-                        ))}
-                      </select>
+                      {opts.length > 0 ? (
+                        <select className="w-full px-3 py-2 text-xs rounded-lg border border-gray-300 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary cursor-pointer hover:border-primary transition-colors">
+                          <option value="">— Pilih {field.label} —</option>
+                          {opts.map((o) => (
+                            <option key={o} value={o}>{o}</option>
+                          ))}
+                        </select>
+                      ) : (
+                        <a
+                          href="/master-cabang"
+                          className="flex items-center gap-2 w-full px-3 py-2 text-xs rounded-lg border border-dashed border-purple-300 bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
+                        >
+                          <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+                          <span className="italic">Belum ada opsi — klik untuk isi di Master Opsi ➔</span>
+                        </a>
+                      )}
                     </div>
                   );
                 }
@@ -690,27 +590,35 @@ export function MasterPerangkatClient() {
 
               {/* Sub-tipe Manager untuk perangkat aktif */}
               {selectedDevice && (
-                <div className="pt-2 border-t border-gray-100">
-                  <label className="block text-[11px] font-bold text-purple-800 mb-1">
-                    Sub-Tipe {selectedDevice.nama}
-                  </label>
+                <div className="pt-2.5 border-t border-gray-100 mt-2">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-[11px] font-bold text-purple-900 flex items-center gap-1">
+                      <Layers className="w-3.5 h-3.5 text-purple-600" /> Sub-Tipe {selectedDevice.nama}
+                    </label>
+                  </div>
                   <div className="flex gap-1.5 mb-2">
                     <Input
                       placeholder="Tambah sub-tipe..."
                       value={newSubtypeInput}
                       onChange={(e) => setNewSubtypeInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddSubtype();
+                        }
+                      }}
                       className="text-xs"
                     />
-                    <Button size="sm" type="button" onClick={handleAddSubtype} className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white">
+                    <Button size="sm" type="button" onClick={handleAddSubtype} className="shrink-0 bg-purple-600 hover:bg-purple-700 text-white font-bold">
                       <Plus className="w-4 h-4" />
                     </Button>
                   </div>
 
-                  <div className="flex flex-wrap gap-1">
+                  <div className="flex flex-wrap gap-1 max-h-28 overflow-y-auto">
                     {selectedDevice.subtypes.map((sub) => (
                       <span key={sub} className="px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-200 rounded-md text-[11px] font-semibold flex items-center gap-1">
                         {sub}
-                        <button type="button" onClick={() => handleRemoveSubtype(selectedDevice.id, sub)} className="hover:text-red-600 font-bold">
+                        <button type="button" onClick={() => handleRemoveSubtype(selectedDevice.id, sub)} className="hover:text-red-600 font-bold ml-0.5">
                           ✕
                         </button>
                       </span>
@@ -758,19 +666,7 @@ export function MasterPerangkatClient() {
                   </Select>
                 </div>
 
-                {fieldType === "select" && (
-                  <div>
-                    <label className="block text-[10px] font-bold text-indigo-800 mb-0.5">
-                      Opsi Slide-Down (pisahkan koma)
-                    </label>
-                    <Input
-                      placeholder="Payakumbuh, Bukittinggi, Solok"
-                      value={fieldOptionsInput}
-                      onChange={(e) => setFieldOptionsInput(e.target.value)}
-                      className="text-xs bg-white border-indigo-300"
-                    />
-                  </div>
-                )}
+
 
                 <div>
                   <label className="block text-[10px] font-semibold text-gray-600 mb-0.5">Placeholder</label>
@@ -803,15 +699,18 @@ export function MasterPerangkatClient() {
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <p className="font-bold text-gray-900 truncate">{field.label}</p>
                           {field.type === "select" && (
-                            <button
-                              type="button"
-                              onClick={() => handleOpenManageOptions(field)}
-                              className="text-[10px] font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-2 py-0.5 rounded-md border border-indigo-200 transition-all flex items-center gap-1 shrink-0 cursor-pointer"
-                              title="Klik untuk Tambah/Edit/Hapus Opsi Dropdown"
+                            <a
+                              href="/master-cabang"
+                              className="text-[10px] font-bold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 px-2 py-0.5 rounded-md border border-purple-200 transition-all flex items-center gap-1 shrink-0 cursor-pointer"
+                              title="Pengisian & pengeditan opsi slide-down dilakukan terpusat di Master Opsi"
                             >
-                              <Sliders className="w-3 h-3 text-indigo-600" />
-                              {field.options && field.options.length > 0 ? `${field.options.length} Opsi` : "Edit Opsi"}
-                            </button>
+                              <Sliders className="w-3 h-3 text-purple-600" />
+                              {field.id === "cabang"
+                                ? `${activeCabangList.length} Opsi`
+                                : field.options && field.options.length > 0
+                                ? `${field.options.length} Opsi`
+                                : "Isi Opsi di Master Opsi ➔"}
+                            </a>
                           )}
                         </div>
                         <p className="text-[10px] text-gray-400 uppercase">{field.type}</p>

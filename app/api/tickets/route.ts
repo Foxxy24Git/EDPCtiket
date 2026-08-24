@@ -85,7 +85,13 @@ export async function POST(req: Request) {
   if (!wsCabang) return NextResponse.json({ error: "Cabang wajib dipilih." }, { status: 400 });
   if (!wsTanggalMasuk) return NextResponse.json({ error: "Tanggal Masuk wajib diisi." }, { status: 400 });
   if (!wsNoSurat) return NextResponse.json({ error: "Nomor Surat wajib diisi." }, { status: 400 });
-  if (!wsMerekKomputer) return NextResponse.json({ error: "Merek Komputer wajib diisi." }, { status: 400 });
+  if (!wsMerekKomputer) return NextResponse.json({ error: "Merek Komputer / Perangkat wajib diisi." }, { status: 400 });
+  if ((wsMerekKomputer.startsWith("[Workstation]") || wsMerekKomputer.startsWith("[Komputer]")) && !wsMerekKomputer.includes(" - ")) {
+    return NextResponse.json(
+      { error: "Sub-tipe / jenis workstation (seperti Desktop, All in One, Laptop, Mini PC) wajib dipilih." },
+      { status: 400 }
+    );
+  }
   if (!wsKelengkapan) return NextResponse.json({ error: "Kelengkapan wajib diisi." }, { status: 400 });
   if (!wsSnKomputer) return NextResponse.json({ error: "SN Komputer wajib diisi." }, { status: 400 });
   if (!wsKerusakan) return NextResponse.json({ error: "Kerusakan wajib diisi." }, { status: 400 });
