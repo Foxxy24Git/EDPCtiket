@@ -167,15 +167,8 @@ function RekapLaporanContent({ today }: Props) {
           const data = await res.json();
           const items: TicketOption[] = data.items || [];
 
-          // Hanya tiket berstatus selesai & sudah dilakukan penyerahan ke cabang
-          const closedAndReturned = items.filter(
-            (t) => t.status === "selesai" && Boolean(t.wsTglKembaliKeCabang)
-          );
-          const eligible =
-            closedAndReturned.length > 0
-              ? closedAndReturned
-              : items.filter((t) => t.status === "selesai");
-          const targetItems = eligible.length > 0 ? eligible : items;
+          // Semua tiket berstatus selesai bisa dibuatkan berita acara
+          const targetItems = items.filter((t) => t.status === "selesai");
 
           // Urutkan dari yang TERBARU di paling atas (berdasarkan tanggal masuk/waktu open)
           targetItems.sort((a, b) => {
@@ -242,7 +235,7 @@ function RekapLaporanContent({ today }: Props) {
   // Opsi tiket utama untuk SearchableSelect
   const mainTicketOptions: SearchableOption[] = tickets.map((t) => ({
     value: t.id,
-    label: `${t.noTiket} — [${t.wsCabang}] ${t.wsMerekKomputer}`,
+    label: `${t.wsTglKembaliKeCabang ? "[✓ Diserahkan] " : ""}${t.noTiket} — [${t.wsCabang}] ${t.wsMerekKomputer}`,
     sublabel: `SN: ${t.wsSnKomputer || "-"} | PIC Penerima: ${t.wsPicTerima || "-"}`,
   }));
 
@@ -259,7 +252,7 @@ function RekapLaporanContent({ today }: Props) {
   // Opsi perangkat tambahan untuk SearchableSelect
   const extraDeviceOptions: SearchableOption[] = unaddedTicketsForBranch.map((t) => ({
     value: t.id,
-    label: `${t.noTiket} — ${t.wsMerekKomputer}`,
+    label: `${t.wsTglKembaliKeCabang ? "[✓ Diserahkan] " : ""}${t.noTiket} — ${t.wsMerekKomputer}`,
     sublabel: `SN: ${t.wsSnKomputer || "-"}`,
   }));
 
@@ -343,11 +336,43 @@ function RekapLaporanContent({ today }: Props) {
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
+
+      await performBatchSerahkan();
     } catch (e) {
       console.error(e);
       alert("Gagal mengunduh dokumen Berita Acara.");
     } finally {
       setDownloadingBa(false);
+    }
+  }
+
+  async function performBatchSerahkan() {
+    const unreturnedIds = deviceList
+      .map(d => d.id)
+      .filter(id => {
+         const t = tickets.find(x => x.id === id);
+         return t && !t.wsTglKembaliKeCabang;
+      });
+
+    if (unreturnedIds.length === 0) return;
+
+    try {
+      await fetch("/api/tickets/batch-serahkan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ticketIds: unreturnedIds,
+          wsTglKembaliKeCabang: baForm.tgl,
+          wsPicTerima: baForm.diterimaPic || baForm.diterimaOleh,
+          activityText: `Penyerahan ke Cabang: Diterima oleh ${baForm.diterimaPic || baForm.diterimaOleh} (via Cetak Berita Acara)`
+        }),
+      });
+      // Force reload to update UI state
+      if (typeof window !== "undefined") {
+        window.location.reload();
+      }
+    } catch (e) {
+      console.error("Batch serahkan failed:", e);
     }
   }
 
@@ -371,6 +396,8 @@ function RekapLaporanContent({ today }: Props) {
         printWin.document.write(htmlText);
         printWin.document.close();
       }
+
+      await performBatchSerahkan();
     } catch (e) {
       console.error(e);
       alert("Gagal mencetak Berita Acara.");

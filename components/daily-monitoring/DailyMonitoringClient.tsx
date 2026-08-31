@@ -18,6 +18,7 @@ import type { TicketListItem } from "@/lib/ticketQueries";
 
 interface Props {
   initialItems: TicketListItem[];
+  selesaiItems: TicketListItem[];
   role: "superadmin" | "user" | "supervisi";
   supervisiUsers: { id: string; nama: string }[];
   currentUserId: string;
@@ -26,9 +27,11 @@ interface Props {
 
 export function DailyMonitoringClient({
   initialItems,
+  selesaiItems,
 }: Props) {
   const router = useRouter();
   const [items] = useState<TicketListItem[]>(initialItems);
+  const [finishedItems] = useState<TicketListItem[]>(selesaiItems);
   const [loading] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -43,6 +46,18 @@ export function DailyMonitoringClient({
         (t.wsKerusakan && t.wsKerusakan.toLowerCase().includes(q))
     );
   }, [items, search]);
+
+  const filteredFinishedItems = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return finishedItems;
+    return finishedItems.filter(
+      (t) =>
+        t.noTiket.toLowerCase().includes(q) ||
+        (t.wsCabang && t.wsCabang.toLowerCase().includes(q)) ||
+        (t.wsMerekKomputer && t.wsMerekKomputer.toLowerCase().includes(q)) ||
+        (t.wsKerusakan && t.wsKerusakan.toLowerCase().includes(q))
+    );
+  }, [finishedItems, search]);
 
   return (
     <div className="space-y-4">
@@ -63,13 +78,15 @@ export function DailyMonitoringClient({
         <div className="flex items-center gap-2 shrink-0">
           {loading && <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />}
           <span className="text-xs text-gray-500 font-medium">
-            {filteredItems.length} tiket proses
+            {filteredItems.length} tiket proses &bull; {filteredFinishedItems.length} menunggu penyerahan
           </span>
         </div>
       </div>
 
-      <Card padding="none" className="overflow-hidden">
-        {filteredItems.length === 0 ? (
+      <div>
+        <h2 className="text-sm font-bold text-gray-800 mb-2">Tiket Sedang Diproses</h2>
+        <Card padding="none" className="overflow-hidden">
+          {filteredItems.length === 0 ? (
           <div className="py-12 text-center text-sm text-gray-400">
             Tidak ada tiket workstation aktif yang sedang diproses.
           </div>
@@ -121,7 +138,66 @@ export function DailyMonitoringClient({
             </Table>
           </div>
         )}
-      </Card>
+        </Card>
+      </div>
+
+      <div>
+        <h2 className="text-sm font-bold text-gray-800 mb-2 mt-6">Tiket Selesai — Menunggu Penyerahan ke Cabang</h2>
+        <Card padding="none" className="overflow-hidden">
+          {filteredFinishedItems.length === 0 ? (
+            <div className="py-12 text-center text-sm text-gray-400">
+              Tidak ada tiket yang menunggu penyerahan ke cabang.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHead>
+                  <TableRow>
+                    <Th>No Tiket</Th>
+                    <Th>Cabang</Th>
+                    <Th>Merek Perangkat</Th>
+                    <Th>SN Perangkat</Th>
+                    <Th>Tanggal Masuk</Th>
+                    <Th>Kerusakan</Th>
+                    <Th>Petugas IT</Th>
+                    <Th>Status Supervisi</Th>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredFinishedItems.map((t) => (
+                    <TableRow
+                      key={t.id}
+                      className="cursor-pointer hover:bg-emerald-50 transition-colors"
+                      onClick={() => router.push(`/daily-monitoring/${t.id}`)}
+                    >
+                      <Td className="font-mono font-semibold text-primary">
+                        {t.noTiket}
+                      </Td>
+                      <Td className="font-medium text-gray-900">{t.wsCabang}</Td>
+                      <Td>{t.wsMerekKomputer || "—"}</Td>
+                      <Td className="font-mono text-xs text-gray-600">{t.wsSnKomputer || "—"}</Td>
+                      <Td className="whitespace-nowrap text-xs">
+                        {t.wsTanggalMasuk ? fmtDateTime(t.wsTanggalMasuk) : "—"}
+                      </Td>
+                      <Td className="max-w-xs truncate" title={t.wsKerusakan}>
+                        {t.wsKerusakan}
+                      </Td>
+                      <Td className="text-gray-600">{t.ownerNama}</Td>
+                      <Td>
+                        <Badge
+                          variant={t.statusSupervisi === "approved" ? "success" : "neutral"}
+                        >
+                          {t.statusSupervisi === "approved" ? "Diapprove" : "Pending"}
+                        </Badge>
+                      </Td>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 }

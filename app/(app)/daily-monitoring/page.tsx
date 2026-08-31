@@ -8,8 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function DailyMonitoringPage() {
   const session = await requireSession();
 
-  const [items, supervisiUsers, me] = await Promise.all([
+  const [items, selesaiItems, supervisiUsers, me] = await Promise.all([
     listTickets({ status: "proses" }),
+    listTickets({ status: "selesai", belumDiserahkan: true }),
     prisma.user.findMany({
       where: { role: "supervisi", isAktif: true },
       orderBy: { nama: "asc" },
@@ -24,7 +25,7 @@ export default async function DailyMonitoringPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="page-title">Daily Monitoring</h1>
+        <h1 className="page-title">Tiket Monitoring</h1>
         <p className="page-subtitle">
           Daftar seluruh tiket workstation yang saat ini sedang dalam proses penanganan.
           Klik baris untuk membuka detail pekerjaan, mencatat kegiatan, atau meng-update status tiket.
@@ -32,6 +33,7 @@ export default async function DailyMonitoringPage() {
       </div>
       <DailyMonitoringClient
         initialItems={items}
+        selesaiItems={selesaiItems}
         role={session.role}
         supervisiUsers={supervisiUsers}
         currentUserId={session.sub}

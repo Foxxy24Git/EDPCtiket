@@ -38,14 +38,14 @@ export const NAV_ITEMS: NavItem[] = [
     description: "Ringkasan & status open tiket workstation",
   },
   {
-    label: "Daily Monitoring",
+    label: "Tiket Monitoring",
     href: "/daily-monitoring",
     icon: Activity,
     description: "Semua tiket workstation aktif",
     roles: ["user", "supervisi"],
   },
   {
-    label: "Data Monitoring",
+    label: "Data Tiket",
     href: "/weekly-monitoring",
     icon: CalendarRange,
     description: "Riwayat tiket workstation (read-only)",

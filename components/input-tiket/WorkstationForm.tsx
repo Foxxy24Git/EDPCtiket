@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, TicketPlus, Monitor, CreditCard } from "lucide-react";
+import { CheckCircle2, TicketPlus, Monitor, CreditCard, Loader2, Sparkles } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -199,6 +199,105 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
     setCpTelp("");
     setKegiatan("Menerima Perangkat");
     setError("");
+    setSnRecommendation(null);
+  }
+
+  const [snRecommendation, setSnRecommendation] = useState<{ cabang?: string | null, capem?: string | null, merek?: string | null } | null>(null);
+  const [isSearchingSn, setIsSearchingSn] = useState(false);
+
+  useEffect(() => {
+    const sn = wsSnKomputer.trim();
+    if (sn.length < 3) {
+      setSnRecommendation(null);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      setIsSearchingSn(true);
+      try {
+        const res = await fetch(`/api/tickets/history-by-sn?sn=${encodeURIComponent(sn)}`);
+        if (res.ok) {
+          const resData = await res.json();
+          if (resData.found) {
+            setSnRecommendation(resData.data);
+          } else {
+            setSnRecommendation(null);
+          }
+        }
+      } catch (err) {
+        console.error("Gagal cari riwayat SN:", err);
+      } finally {
+        setIsSearchingSn(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [wsSnKomputer]);
+
+  function applyMerekRecommendation(rawMerek: string) {
+    const match = rawMerek.match(/^\[(.*?)\]\s*(.*)$/);
+    if (match) {
+      setMerekPilihan(match[2].trim());
+    } else {
+      setMerekPilihan(rawMerek);
+    }
+  }
+
+  function applyDeviceRecommendation(rawMerek: string) {
+    const match = rawMerek.match(/^\[(.*?)\]\s*(.*)$/);
+    if (match) {
+      const inside = match[1];
+      let devName = inside;
+      let subtype = "";
+      if (inside.includes(" - ")) {
+         const parts = inside.split(" - ");
+         devName = parts[0].trim();
+         subtype = parts[1].trim();
+      } else {
+         devName = inside.trim();
+      }
+
+      const foundDev = deviceTypesList.find(d => 
+        d.nama.toLowerCase().includes(devName.toLowerCase()) || devName.toLowerCase().includes(d.nama.toLowerCase())
+      );
+
+      if (foundDev) {
+        setSelectedDeviceId(foundDev.id);
+        setSelectedSubtype(subtype);
+        setKegiatan(`Menerima ${foundDev.nama}`);
+      }
+    }
+  }
+
+  // Cek apakah perangkat saat ini sudah sesuai dengan rekomendasi
+  let isDeviceRecommendationMatch = true;
+  let recDeviceDisplay = "";
+  if (snRecommendation?.merek) {
+    const match = snRecommendation.merek.match(/^\[(.*?)\]\s*(.*)$/);
+    if (match) {
+      const inside = match[1];
+      recDeviceDisplay = inside;
+      
+      let devName = inside;
+      let subtype = "";
+      if (inside.includes(" - ")) {
+         const parts = inside.split(" - ");
+         devName = parts[0].trim();
+         subtype = parts[1].trim();
+      } else {
+         devName = inside.trim();
+      }
+
+      const foundDev = deviceTypesList.find(d => 
+        d.nama.toLowerCase().includes(devName.toLowerCase()) || devName.toLowerCase().includes(d.nama.toLowerCase())
+      );
+
+      if (foundDev) {
+        if (selectedDeviceId !== foundDev.id || (subtype && selectedSubtype !== subtype)) {
+          isDeviceRecommendationMatch = false;
+        }
+      }
+    }
   }
 
   // Hitung Merek Komputer/Perangkat final string
@@ -408,6 +507,20 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
             </motion.div>
           )}
 
+          {/* Rekomendasi Jenis & Sub-Tipe */}
+          {snRecommendation?.merek && !isDeviceRecommendationMatch && (
+            <div className="pt-1">
+              <button
+                type="button"
+                onClick={() => applyDeviceRecommendation(snRecommendation.merek!)}
+                className="text-[11px] text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg border border-blue-200 text-left w-fit flex items-center gap-1.5 transition-colors"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-blue-500" />
+                <span className="font-semibold">Rekomendasi riwayat:</span> {recDeviceDisplay} (Klik untuk pakai)
+              </button>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {activeFields.map((field) => {
               const val = getFieldValue(field.id);
@@ -433,20 +546,31 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
 
               if (field.id === "cabang") {
                 return (
-                  <Select
-                    key={field.id}
-                    label={field.label}
-                    required={field.required !== false}
-                    value={wsCabang}
-                    onChange={(e) => setWsCabang(e.target.value)}
-                  >
-                    <option value="">— Pilih Cabang —</option>
-                    {daftarCabang.map((cabang) => (
-                      <option key={cabang} value={cabang}>
-                        {cabang}
-                      </option>
-                    ))}
-                  </Select>
+                  <div key={field.id} className="flex flex-col gap-1 w-full">
+                    <Select
+                      label={field.label}
+                      required={field.required !== false}
+                      value={wsCabang}
+                      onChange={(e) => setWsCabang(e.target.value)}
+                    >
+                      <option value="">— Pilih Cabang —</option>
+                      {daftarCabang.map((cabang) => (
+                        <option key={cabang} value={cabang}>
+                          {cabang}
+                        </option>
+                      ))}
+                    </Select>
+                    {snRecommendation?.cabang && snRecommendation.cabang !== wsCabang && (
+                      <button
+                        type="button"
+                        onClick={() => setWsCabang(snRecommendation.cabang!)}
+                        className="mt-0.5 text-[11px] text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 text-left w-fit flex items-center gap-1 transition-colors"
+                      >
+                        <Sparkles className="w-3 h-3 text-blue-500" />
+                        <span className="font-semibold">Rekomendasi riwayat:</span> {snRecommendation.cabang} (Klik untuk pakai)
+                      </button>
+                    )}
+                  </div>
                 );
               }
 
@@ -459,7 +583,7 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
                 const opts = rawOpts.filter((m) => m !== "Lainnya (Ketik Manual)");
 
                 return (
-                  <div key={field.id} className="flex flex-col gap-1">
+                  <div key={field.id} className="flex flex-col gap-1 w-full">
                     <Select
                       label={field.label || `Merek ${activeDeviceObj ? activeDeviceObj.nama : "Perangkat"}`}
                       required={field.required !== false}
@@ -473,6 +597,20 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
                         </option>
                       ))}
                     </Select>
+                    {snRecommendation?.merek && snRecommendation.merek !== getFormattedMerek() && (
+                      <button
+                        type="button"
+                        onClick={() => applyMerekRecommendation(snRecommendation.merek!)}
+                        className="mt-0.5 text-[11px] text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 text-left w-fit flex items-center gap-1 transition-colors"
+                      >
+                        <Sparkles className="w-3 h-3 text-blue-500" />
+                        <span className="font-semibold">Rekomendasi riwayat:</span> {
+                          snRecommendation.merek.match(/^\[(.*?)\]\s*(.*)$/) 
+                            ? snRecommendation.merek.match(/^\[(.*?)\]\s*(.*)$/)![2].trim() || snRecommendation.merek 
+                            : snRecommendation.merek
+                        } (Klik untuk pakai)
+                      </button>
+                    )}
                   </div>
                 );
               }
@@ -516,14 +654,32 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
               }
 
               return (
-                <Input
-                  key={field.id}
-                  label={field.label}
-                  required={field.required !== false}
-                  value={val}
-                  onChange={(e) => setFieldValue(field.id, e.target.value)}
-                  placeholder={field.placeholder || `Tuliskan ${field.label.toLowerCase()}...`}
-                />
+                <div key={field.id} className="flex flex-col gap-1 w-full">
+                  <div className="relative">
+                    <Input
+                      label={field.label}
+                      required={field.required !== false}
+                      value={val}
+                      onChange={(e) => setFieldValue(field.id, e.target.value)}
+                      placeholder={field.placeholder || `Tuliskan ${field.label.toLowerCase()}...`}
+                    />
+                    {field.id === "sn" && isSearchingSn && (
+                      <div className="absolute right-3 top-[34px] -translate-y-1/2">
+                        <Loader2 className="w-4 h-4 text-primary animate-spin" />
+                      </div>
+                    )}
+                  </div>
+                  {field.id === "capem" && snRecommendation?.capem && snRecommendation.capem !== val && (
+                    <button
+                      type="button"
+                      onClick={() => setFieldValue(field.id, snRecommendation.capem!)}
+                      className="mt-0.5 text-[11px] text-blue-600 bg-blue-50 hover:bg-blue-100 px-2 py-1 rounded border border-blue-200 text-left w-fit flex items-center gap-1 transition-colors"
+                    >
+                      <Sparkles className="w-3 h-3 text-blue-500" />
+                      <span className="font-semibold">Rekomendasi riwayat:</span> {snRecommendation.capem} (Klik untuk pakai)
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>

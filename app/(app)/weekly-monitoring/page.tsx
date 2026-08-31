@@ -28,7 +28,7 @@ export default async function WeeklyMonitoringPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="page-title">Data Monitoring</h1>
+        <h1 className="page-title">Data Tiket</h1>
         <p className="page-subtitle">
           Cari &amp; telusuri riwayat seluruh tiket gangguan workstation (proses maupun selesai).
           Default menampilkan 7 hari terakhir — gunakan filter untuk membatasi pencarian.

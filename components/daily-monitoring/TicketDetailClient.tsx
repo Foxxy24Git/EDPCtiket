@@ -94,7 +94,7 @@ export function TicketDetailClient({
   role,
   currentUserId,
   backHref = "/daily-monitoring",
-  backLabel = "Kembali ke Daily Monitoring",
+  backLabel = "Kembali ke Tiket Monitoring",
   readOnly = false,
 }: Props) {
   const router = useRouter();
@@ -709,7 +709,7 @@ export function TicketDetailClient({
         <div className="flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-medium px-4 py-2.5 rounded-lg border border-blue-200 shadow-sm">
           <Info className="w-4 h-4 shrink-0 text-blue-600" />
           <span>
-            <strong>Mode Read-Only ({readOnly ? "Data Monitoring" : role === "superadmin" ? "Super Admin" : "Supervisi"}):</strong> Anda sedang melihat rincian detail dan kronologi penanganan tiket ini dalam mode baca saja. Modifikasi data hanya dapat dilakukan di Daily Monitoring oleh IT Support pembuat tiket.
+            <strong>Mode Read-Only ({readOnly ? "Data Tiket" : role === "superadmin" ? "Super Admin" : "Supervisi"}):</strong> Anda sedang melihat rincian detail dan kronologi penanganan tiket ini dalam mode baca saja. Modifikasi data hanya dapat dilakukan di Tiket Monitoring oleh IT Support pembuat tiket.
           </span>
         </div>
       )}

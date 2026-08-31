@@ -8,6 +8,7 @@ export interface TicketListFilter {
   currentUserId?: string | null;
   search?: string | null;
   wsCabang?: string | null;
+  belumDiserahkan?: boolean;
 }
 
 export interface TicketListItem {
@@ -59,6 +60,9 @@ export async function listTickets(f: TicketListFilter): Promise<TicketListItem[]
   }
   if (f.wsCabang?.trim()) {
     where.wsCabang = f.wsCabang.trim();
+  }
+  if (f.belumDiserahkan) {
+    where.wsTglKembaliKeCabang = null;
   }
 
   const search = f.search?.trim();
