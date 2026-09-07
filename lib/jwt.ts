@@ -3,8 +3,12 @@ import type { Role } from "@/lib/roles";
 
 export const COOKIE_NAME = "fq_session";
 
-/** Durasi sesi: 12 jam (mencakup shift terpanjang D/E). */
-export const SESSION_MAX_AGE = 60 * 60 * 12;
+/** 
+ * Durasi sesi standar aplikasi internal bank: 12 Jam (mencakup 1 shift kerja penuh).
+ * Dapat disesuaikan via environment variable SESSION_MAX_AGE_HOURS di .env.
+ */
+export const SESSION_MAX_AGE =
+  (parseInt(process.env.SESSION_MAX_AGE_HOURS || "12", 10) || 12) * 60 * 60;
 
 export interface SessionPayload {
   sub: string; // user id

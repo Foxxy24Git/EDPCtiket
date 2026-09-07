@@ -818,11 +818,6 @@ export function MasterDeviceSection() {
         </div>
       </Card>
 
-      <div className="flex justify-end pt-4 border-t border-gray-200">
-        <Button size="lg" loading={saving} onClick={handleSaveAll} className="px-6">
-          <Check className="w-4 h-4 mr-2" /> Simpan Semua Perubahan Master Opsi
-        </Button>
-      </div>
     </div>
   );
 }

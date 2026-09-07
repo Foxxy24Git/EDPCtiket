@@ -63,15 +63,18 @@ export async function GET(req: Request) {
   const limitRaw = Number(searchParams.get("limit"));
   const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 200) : 200;
 
-  const where: Prisma.WorkstationMasterWhereInput = q
-    ? {
-        OR: [
-          { namaCabang: { contains: q, mode: "insensitive" } },
-          { kodeKantor: { contains: q, mode: "insensitive" } },
-          { lokasiKantor: { contains: q, mode: "insensitive" } },
-        ],
-      }
-    : {};
+  const where: Prisma.WorkstationMasterWhereInput = {
+    isTerminated: false,
+    ...(q
+      ? {
+          OR: [
+            { namaCabang: { contains: q, mode: "insensitive" } },
+            { kodeKantor: { contains: q, mode: "insensitive" } },
+            { lokasiKantor: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+  };
 
   let [items, total] = await Promise.all([
     prisma.workstationMaster.findMany({
@@ -79,7 +82,7 @@ export async function GET(req: Request) {
       orderBy: { namaCabang: "asc" },
       take: limit,
     }),
-    prisma.workstationMaster.count(),
+    prisma.workstationMaster.count({ where: { isTerminated: false } }),
   ]);
 
   // Jika database master cabang masih kosong, otomatis isi dengan 38 cabang default Bank Nagari

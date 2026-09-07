@@ -140,6 +140,45 @@ export async function POST(req: Request) {
     return t;
   });
 
+  // Upsert pc_inventory dengan data terbaru dari tiket yang baru dibuat
+  // Jalankan di luar transaksi agar tidak memblokir jika tabel belum ada
+  if (wsSnKomputer && wsSnKomputer !== "-") {
+    try {
+      // Parse merek & jenis dari format "[Komputer - Desktop] Lenovo"
+      let parsedMerek: string | null = null;
+      let parsedJenis: string | null = null;
+      const merekMatch = wsMerekKomputer.match(/^\[([^\]]+)\]\s*(.*)$/);
+      if (merekMatch) {
+        const inside = merekMatch[1].trim(); // "Komputer - Desktop"
+        const brand  = merekMatch[2].trim(); // "Lenovo"
+        if (brand) parsedMerek = brand;
+        if (inside.includes(" - ")) {
+          const parts = inside.split(" - ");
+          parsedJenis = parts[1].trim();
+        }
+      }
+
+      await prisma.pcInventory.upsert({
+        where: { sn: wsSnKomputer.toUpperCase() },
+        update: {
+          merek:  parsedMerek  ?? undefined,
+          jenis:  parsedJenis  ?? undefined,
+          cabang: wsCabang     || undefined,
+        },
+        create: {
+          sn:     wsSnKomputer.toUpperCase(),
+          merek:  parsedMerek,
+          jenis:  parsedJenis,
+          cabang: wsCabang || null,
+          lokasi: null,
+        },
+      });
+    } catch (invErr) {
+      // Tidak gagalkan response tiket hanya karena inventory gagal diupdate
+      console.warn("[pc_inventory] Gagal upsert setelah simpan tiket:", invErr);
+    }
+  }
+
   return NextResponse.json(
     { item: { id: ticket.id, noTiket: ticket.noTiket } },
     { status: 201 }

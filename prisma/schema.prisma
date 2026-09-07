@@ -61,6 +61,7 @@ model ServerAccessLog {
   catatanOleh    String    @map("catatan_oleh")
   statusApproval String    @default("pending") @map("status_approval") // "pending" | "approved" | "rejected"
   approvedBy     String?   @map("approved_by")
+  isTerminated   Boolean   @default(false) @map("is_terminated")
   createdAt      DateTime  @default(now()) @map("created_at")
 
   pencatat       User      @relation("LogPencatat", fields: [catatanOleh], references: [id])
@@ -74,6 +75,7 @@ model WorkstationMaster {
   namaCabang   String   @unique @map("nama_cabang")
   kodeKantor   String?  @unique @map("kode_kantor")
   lokasiKantor String?  @map("lokasi_kantor")
+  isTerminated Boolean  @default(false) @map("is_terminated")
   tickets      Ticket[]
 
   @@map("workstation_master")
@@ -108,6 +110,7 @@ model Ticket {
   statusSupervisi      StatusSupervisi @default(belum) @map("status_supervisi")
   ownerUserId          String          @map("owner_user_id")
   keterangan           String?
+  isTerminated         Boolean         @default(false) @map("is_terminated")
   createdAt            DateTime        @default(now()) @map("created_at")
 
   owner       User               @relation("TicketOwner", fields: [ownerUserId], references: [id])
@@ -138,5 +141,20 @@ model MasterOption {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("master_options")
+}
+
+// Inventaris PC/Laptop/AIO dari data aset & tiket
+model PcInventory {
+  id           String   @id @default(cuid())
+  sn           String   @unique                // Serial Number (unik, wajib)
+  merek        String?                         // Lenovo, HP, Dell, dll.
+  jenis        String?                         // Desktop, All in One, Laptop, Mini PC
+  lokasi       String?                         // Lokasi/posisi dari data aset Excel (Teller-01, dll.)
+  cabang       String?                         // Cabang canonical Bank Nagari (diisi/update dari tiket)
+  isTerminated Boolean  @default(false) @map("is_terminated")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  @@map("pc_inventory")
 }
 

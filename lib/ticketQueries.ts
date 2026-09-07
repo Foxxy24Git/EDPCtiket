@@ -47,6 +47,7 @@ export interface TicketListItem {
 export async function listTickets(f: TicketListFilter): Promise<TicketListItem[]> {
   const where: Prisma.TicketWhereInput = {
     kategori: "workstation",
+    isTerminated: false,
   };
 
   if (f.status === "proses" || f.status === "selesai") {
@@ -142,6 +143,7 @@ export async function listWorkstationWeeklyTickets(
 ): Promise<TicketListItem[]> {
   const where: Prisma.TicketWhereInput = {
     kategori: "workstation",
+    isTerminated: false,
     waktuOpen: { gte: f.from, lte: f.to },
   };
 
@@ -238,6 +240,7 @@ export async function listWorkstationWeeklyTickets(
 export async function countWeeklyTickets(f: WorkstationWeeklyFilter): Promise<number> {
   const where: Prisma.TicketWhereInput = {
     kategori: "workstation",
+    isTerminated: false,
     waktuOpen: { gte: f.from, lte: f.to },
   };
 
@@ -337,7 +340,7 @@ export async function getTicketDetail(id: string): Promise<TicketDetail | null> 
       },
     },
   });
-  if (!t) return null;
+  if (!t || t.isTerminated) return null;
 
   return {
     id: t.id,

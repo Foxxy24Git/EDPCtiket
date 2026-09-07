@@ -49,11 +49,12 @@ export interface DashboardData {
 export async function getDashboardData(): Promise<DashboardData> {
   const last30days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
-  const whereTotal: Prisma.TicketWhereInput = { kategori: "workstation" };
-  const whereProses: Prisma.TicketWhereInput = { kategori: "workstation", status: "proses" };
+  const whereTotal: Prisma.TicketWhereInput = { kategori: "workstation", isTerminated: false };
+  const whereProses: Prisma.TicketWhereInput = { kategori: "workstation", status: "proses", isTerminated: false };
   const whereSelesai: Prisma.TicketWhereInput = {
     kategori: "workstation",
     status: "selesai",
+    isTerminated: false,
   };
 
   const [total, proses, selesai, openList, recentList, completedTickets, allTickets] =
@@ -76,6 +77,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       prisma.ticket.findMany({
         where: {
           kategori: "workstation",
+          isTerminated: false,
           waktuOpen: { gte: last30days },
         },
         orderBy: { waktuOpen: "desc" },
@@ -93,6 +95,7 @@ export async function getDashboardData(): Promise<DashboardData> {
         where: {
           kategori: "workstation",
           status: "selesai",
+          isTerminated: false,
           waktuSelesai: { not: null },
           waktuOpen: { gte: last30days },
         },
@@ -102,6 +105,7 @@ export async function getDashboardData(): Promise<DashboardData> {
       prisma.ticket.findMany({
         where: {
           kategori: "workstation",
+          isTerminated: false,
           waktuOpen: { gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000) },
         },
         select: { wsCabang: true, wsMerekKomputer: true, waktuOpen: true },

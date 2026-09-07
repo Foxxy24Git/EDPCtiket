@@ -15,38 +15,79 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "SN tidak valid atau terlalu pendek." }, { status: 400 });
   }
 
+  const snClean = sn.trim();
+
   try {
+    // 1. Cari di riwayat tiket (prioritas utama — data terbaru dari tiket nyata)
     const historyTicket = await prisma.ticket.findFirst({
       where: {
         kategori: "workstation",
+        isTerminated: false,
         wsSnKomputer: {
-          equals: sn.trim(),
-          mode: "insensitive"
-        }
+          equals: snClean,
+          mode: "insensitive",
+        },
       },
-      orderBy: {
-        createdAt: "desc"
-      },
+      orderBy: { createdAt: "desc" },
       select: {
         wsCabang: true,
         wsCapem: true,
-        wsMerekKomputer: true
-      }
+        wsMerekKomputer: true,
+      },
     });
 
-    if (!historyTicket) {
+    if (historyTicket) {
+      return NextResponse.json({
+        found: true,
+        source: "ticket",
+        data: {
+          cabang: historyTicket.wsCabang,
+          capem: historyTicket.wsCapem,
+          merek: historyTicket.wsMerekKomputer,
+        },
+      });
+    }
+
+    // 2. Fallback: cari di pc_inventory (data dari Excel / master SN)
+    const inventoryItem = await prisma.pcInventory.findFirst({
+      where: {
+        isTerminated: false,
+        sn: {
+          equals: snClean,
+          mode: "insensitive",
+        },
+      },
+    });
+
+    if (!inventoryItem) {
       return NextResponse.json({ found: false });
+    }
+
+    // Format merek dari pc_inventory ke format yang dipahami WorkstationForm
+    // Format: "[Komputer - Desktop] Lenovo" atau "[Komputer - All in One] HP"
+    let formattedMerek: string | null = null;
+    if (inventoryItem.merek || inventoryItem.jenis) {
+      const jenisPc = inventoryItem.jenis ?? "";
+      const merekPc = inventoryItem.merek ?? "";
+
+      if (jenisPc && merekPc) {
+        formattedMerek = `[Komputer - ${jenisPc}] ${merekPc}`;
+      } else if (merekPc) {
+        formattedMerek = `[Komputer] ${merekPc}`;
+      } else if (jenisPc) {
+        formattedMerek = `[Komputer - ${jenisPc}]`;
+      }
     }
 
     return NextResponse.json({
       found: true,
+      source: "inventory",
       data: {
-        cabang: historyTicket.wsCabang,
-        capem: historyTicket.wsCapem,
-        merek: historyTicket.wsMerekKomputer
-      }
+        cabang: inventoryItem.cabang ?? null,
+        capem: null,
+        merek: formattedMerek,
+      },
     });
-
   } catch (error) {
     console.error("Gagal mencari riwayat SN:", error);
     return NextResponse.json({ error: "Terjadi kesalahan server." }, { status: 500 });

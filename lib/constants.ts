@@ -99,7 +99,7 @@ export const NAV_ITEMS: NavItem[] = [
     roles: ["superadmin"],
   },
   {
-    label: "Log Server",
+    label: "Aktivitas Server",
     href: "/log-server",
     icon: ServerCog,
     description: "Monitoring akses keluar masuk ruang server",

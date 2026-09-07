@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Loader2, Search } from "lucide-react";
+import { Calendar, Loader2, Search, Download } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
@@ -91,6 +91,48 @@ export function WeeklyMonitoringClient({
     }
   };
 
+  const unduhExcel = async () => {
+    setLoading(true);
+    try {
+      const q = new URLSearchParams();
+      if (from) q.set("dari", from);
+      if (to) q.set("sampai", to);
+      if (cabang) q.set("cabang", cabang);
+      if (status) q.set("status", status);
+      if (statusSupervisi) q.set("statusSupervisi", statusSupervisi);
+      if (jenisPerangkat) q.set("jenisPerangkat", jenisPerangkat);
+      if (search) q.set("search", search);
+
+      const tag = jenisPerangkat ? `_${jenisPerangkat.replace(/\s+/g, "_").toUpperCase()}` : "";
+      const url = `/api/rekap/workstation?${q.toString()}`;
+      const fallbackName = `REKAP_WORKSTATION${tag}_${from}_sd_${to}.xlsx`;
+
+      const res = await fetch(url);
+      if (res.ok) {
+        const cd = res.headers.get("Content-Disposition") ?? "";
+        const match = /filename="?([^"]+)"?/.exec(cd);
+        const name = match?.[1] ?? fallbackName;
+
+        const blob = await res.blob();
+        const objUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objUrl;
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(objUrl);
+      } else {
+        alert("Gagal mengunduh Excel.");
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Terjadi kesalahan saat mengunduh Excel.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   return (
     <div className="space-y-4">
@@ -163,10 +205,15 @@ export function WeeklyMonitoringClient({
             <option value="belum">Belum Approved</option>
           </Select>
 
-          <Button onClick={() => searchTickets()} disabled={loading} className="w-full">
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
-            Filter Tiket
-          </Button>
+          <div className="flex items-center gap-2 w-full">
+            <Button onClick={() => searchTickets()} disabled={loading} className="flex-1">
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+              Filter Tiket
+            </Button>
+            <Button onClick={unduhExcel} disabled={loading} variant="outline" className="border-green-600 text-green-700 hover:bg-green-50 shrink-0" title="Download Laporan Excel">
+              <Download className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
 
         <div className="relative mt-2">

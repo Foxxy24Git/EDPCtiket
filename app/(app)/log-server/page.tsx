@@ -9,7 +9,7 @@ export default async function LogServerPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="page-title">Log Server</h1>
+        <h1 className="page-title">Aktivitas Server</h1>
         <p className="page-subtitle">
           Monitoring akses keluar masuk ruang server — per hari, per minggu, atau keseluruhan.
         </p>

@@ -13,6 +13,7 @@ export async function GET() {
     const tickets = await prisma.ticket.findMany({
       where: {
         kategori: "workstation",
+        isTerminated: false,
         waktuOpen: { gte: today, lt: tomorrow },
       },
       orderBy: { waktuOpen: "desc" },

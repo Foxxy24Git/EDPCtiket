@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     const dari = searchParams.get("dari");
     const sampai = searchParams.get("sampai");
 
-    let where = {};
+    let where: Record<string, unknown> = { isTerminated: false };
     let dateRangeLabel = "Semua Data";
     let filename = "REKAP_LOG_SERVER_SEMUA.xlsx";
 
@@ -30,6 +30,7 @@ export async function GET(req: Request) {
       const startDate = new Date(`${dari}T00:00:00+07:00`);
       const endDate = new Date(`${sampai}T23:59:59.999+07:00`);
       where = {
+        isTerminated: false,
         waktuAkses: {
           gte: startDate,
           lte: endDate,

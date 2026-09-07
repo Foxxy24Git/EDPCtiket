@@ -7,6 +7,7 @@ export async function GET() {
     const preRegistered = await prisma.serverAccessLog.findMany({
       where: {
         statusApproval: "pre_registered",
+        isTerminated: false,
       },
       orderBy: { createdAt: "desc" },
       include: {

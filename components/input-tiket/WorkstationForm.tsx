@@ -46,7 +46,7 @@ const DAFTAR_CABANG = [
   "PADANG PANJANG",
 ];
 
-const MEREK_KOMPUTER_LIST = ["Lenovo", "HP", "Dell", "Acer", "Asus", "Apple", "Fujitsu"];
+const MEREK_KOMPUTER_LIST = ["Lenovo", "HP", "Dell", "Acer", "Asus", "MSI", "Sony", "Apple", "Fujitsu", "Biostar", "ECS", "Intel"];
 
 type CpTipe = "pic" | "wag";
 
@@ -235,11 +235,14 @@ export function WorkstationForm({ onSuccess }: WorkstationFormProps) {
   }, [wsSnKomputer]);
 
   function applyMerekRecommendation(rawMerek: string) {
+    let brand = rawMerek;
     const match = rawMerek.match(/^\[(.*?)\]\s*(.*)$/);
     if (match) {
-      setMerekPilihan(match[2].trim());
-    } else {
-      setMerekPilihan(rawMerek);
+      brand = match[2].trim() || rawMerek;
+    }
+    if (brand) {
+      setMerekKomputerList((prev) => (prev.includes(brand) ? prev : [...prev, brand]));
+      setMerekPilihan(brand);
     }
   }
 

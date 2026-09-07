@@ -751,9 +751,6 @@ export function MasterPerangkatClient() {
             </div>
           </Card>
 
-          <Button size="lg" loading={saving} onClick={handleSaveAll} className="w-full bg-primary hover:bg-primary-600">
-            <Check className="w-4 h-4 mr-2" /> Simpan Pengaturan Form
-          </Button>
         </div>
       </div>
     </div>

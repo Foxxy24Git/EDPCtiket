@@ -903,6 +903,19 @@ export function TicketDetailClient({
               </Button>
             )}
 
+            {/* Tombol Berita Acara Vendor (Keluar jika perangkat diserahkan ke vendor) */}
+            {ticket.wsTglKeVendor && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push(`/rekap-laporan?tab=berita-acara-vendor&ticketId=${ticket.id}`)}
+                className="border-purple-600 text-purple-700 bg-purple-50/50 hover:bg-purple-100 font-bold"
+                title="Buat / Cetak Berita Acara Vendor"
+              >
+                <FileText className="w-4 h-4 text-purple-600" /> BA Vendor
+              </Button>
+            )}
+
             {/* Tombol Berita Acara (Hanya keluar setelah Close Tiket DAN Penyerahan ke Cabang sudah ditekan) */}
             {isSelesai && isSentToCabang && (
               <Button
@@ -912,7 +925,7 @@ export function TicketDetailClient({
                 className="border-blue-600 text-blue-700 bg-blue-50/50 hover:bg-blue-100 font-bold"
                 title="Buat / Cetak Berita Acara Serah Terima"
               >
-                <FileText className="w-4 h-4 text-blue-600" /> Berita Acara
+                <FileText className="w-4 h-4 text-blue-600" /> BA Cabang
               </Button>
             )}
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, Search, Loader2, MapPin, Monitor, Truck, Check, Sliders, Layers, Copy } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Loader2, MapPin, Monitor, Truck, Check, Sliders, Layers, Copy, HardDrive, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -27,7 +27,7 @@ interface Props {
 }
 
 export function MasterCabangClient({ initialBranches }: Props) {
-  const [activeTab, setActiveTab] = useState<"cabang" | "merek" | "vendor" | "opsi">("cabang");
+  const [activeTab, setActiveTab] = useState<"cabang" | "merek" | "vendor" | "opsi" | "sn">("cabang");
   const [branches, setBranches] = useState<Branch[]>(initialBranches);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
@@ -336,6 +336,127 @@ export function MasterCabangClient({ initialBranches }: Props) {
     saveMasterOptions(updated);
   };
 
+  // ── State & Handlers: Master SN Perangkat ──────────────────────────────────
+  interface SnItem {
+    id: string;
+    sn: string;
+    merek: string | null;
+    jenis: string | null;
+    lokasi: string | null;
+    cabang: string | null;
+    updatedAt: string;
+  }
+
+  const [snItems, setSnItems]               = useState<SnItem[]>([]);
+  const [snTotal, setSnTotal]               = useState(0);
+  const [snPage, setSnPage]                 = useState(1);
+  const SN_PAGE_LIMIT                       = 50;
+  const [snLoading, setSnLoading]           = useState(false);
+  const [snQ, setSnQ]                       = useState("");
+  const [snFilterMerek, setSnFilterMerek]   = useState("");
+  const [snFilterJenis, setSnFilterJenis]   = useState("");
+  const [snFilterCabang, setSnFilterCabang] = useState("");
+
+  // Modal states SN
+  const [snAddOpen, setSnAddOpen]           = useState(false);
+  const [snEditOpen, setSnEditOpen]         = useState(false);
+  const [snDelOpen, setSnDelOpen]           = useState(false);
+  const [snSelected, setSnSelected]         = useState<SnItem | null>(null);
+  const [snBusy, setSnBusy]                 = useState(false);
+  const [snError, setSnError]               = useState("");
+  const [snForm, setSnForm]                 = useState({ sn: "", merek: "", jenis: "", lokasi: "", cabang: "" });
+
+  const JENIS_OPTIONS = ["Desktop", "All in One", "Laptop", "Mini PC"];
+
+  async function loadSnItems(page = 1) {
+    setSnLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (snQ)            params.set("q",      snQ);
+      if (snFilterMerek)  params.set("merek",  snFilterMerek);
+      if (snFilterJenis)  params.set("jenis",  snFilterJenis);
+      if (snFilterCabang) params.set("cabang", snFilterCabang);
+      params.set("page",  String(page));
+      params.set("limit", String(SN_PAGE_LIMIT));
+      const res = await fetch(`/api/pc-inventory?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSnItems(data.items ?? []);
+        setSnTotal(data.total ?? 0);
+        setSnPage(page);
+      }
+    } catch (e) {
+      console.error("Gagal memuat pc_inventory:", e);
+    } finally {
+      setSnLoading(false);
+    }
+  }
+
+  // Load saat tab aktif atau filter berubah
+  useEffect(() => {
+    if (activeTab === "sn") {
+      loadSnItems(1);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, snQ, snFilterMerek, snFilterJenis, snFilterCabang]);
+
+  async function handleSnAdd(e: React.FormEvent) {
+    e.preventDefault();
+    setSnError("");
+    if (!snForm.sn.trim()) return setSnError("Serial Number wajib diisi.");
+    setSnBusy(true);
+    try {
+      const res = await fetch("/api/pc-inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(snForm),
+      });
+      const data = await res.json();
+      if (!res.ok) { setSnError(data.error ?? "Gagal menambah data."); return; }
+      setSnAddOpen(false);
+      setSnForm({ sn: "", merek: "", jenis: "", lokasi: "", cabang: "" });
+      await loadSnItems(1);
+    } catch { setSnError("Terjadi kesalahan jaringan."); }
+    finally { setSnBusy(false); }
+  }
+
+  async function handleSnEdit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!snSelected) return;
+    setSnError("");
+    if (!snForm.sn.trim()) return setSnError("Serial Number wajib diisi.");
+    setSnBusy(true);
+    try {
+      const res = await fetch(`/api/pc-inventory/${snSelected.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(snForm),
+      });
+      const data = await res.json();
+      if (!res.ok) { setSnError(data.error ?? "Gagal memperbarui data."); return; }
+      setSnEditOpen(false);
+      setSnSelected(null);
+      await loadSnItems(snPage);
+    } catch { setSnError("Terjadi kesalahan jaringan."); }
+    finally { setSnBusy(false); }
+  }
+
+  async function handleSnDelete() {
+    if (!snSelected) return;
+    setSnBusy(true);
+    setSnError("");
+    try {
+      const res = await fetch(`/api/pc-inventory/${snSelected.id}`, { method: "DELETE" });
+      if (!res.ok) { const d = await res.json(); setSnError(d.error ?? "Gagal menghapus."); return; }
+      setSnDelOpen(false);
+      setSnSelected(null);
+      await loadSnItems(snTotal > SN_PAGE_LIMIT && snItems.length === 1 ? Math.max(1, snPage - 1) : snPage);
+    } catch { setSnError("Terjadi kesalahan jaringan."); }
+    finally { setSnBusy(false); }
+  }
+
+  const snTotalPages = Math.ceil(snTotal / SN_PAGE_LIMIT);
+
   return (
     <div className="space-y-6">
       {/* TABS SUPER ADMIN MASTER DATA */}
@@ -382,6 +503,17 @@ export function MasterCabangClient({ initialBranches }: Props) {
           }`}
         >
           <Sliders className="w-4 h-4" /> 4. Opsi Slide-Down
+        </button>
+
+        <button
+          onClick={() => setActiveTab("sn")}
+          className={`flex-1 py-3.5 px-4 text-center font-bold text-sm transition-all flex items-center justify-center gap-2 border-b-2 ${
+            activeTab === "sn"
+              ? "border-emerald-600 text-emerald-700 bg-emerald-50/30"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:bg-gray-50"
+          }`}
+        >
+          <HardDrive className="w-4 h-4" /> 5. Master SN Perangkat
         </button>
       </div>
 
@@ -709,6 +841,168 @@ export function MasterCabangClient({ initialBranches }: Props) {
         );
       })()}
 
+      {/* ── TAB 5: MASTER SN PERANGKAT ── */}
+      {activeTab === "sn" && (
+        <div className="space-y-4">
+          {/* Filter & Aksi */}
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col sm:flex-row gap-2">
+              {/* Search */}
+              <div className="relative flex-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                  <Search className="w-4 h-4" />
+                </span>
+                <input
+                  type="text"
+                  placeholder="Cari SN, merek, jenis, lokasi, cabang..."
+                  value={snQ}
+                  onChange={(e) => setSnQ(e.target.value)}
+                  className="w-full pl-9 pr-4 py-2 text-sm rounded-md border border-gray-300 bg-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-500 transition-colors"
+                />
+              </div>
+              {/* Filter Merek */}
+              <select
+                value={snFilterMerek}
+                onChange={(e) => setSnFilterMerek(e.target.value)}
+                className="px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-500 transition-colors min-w-[130px]"
+              >
+                <option value="">Semua Merek</option>
+                {masterOptions.merekKomputer.map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
+              </select>
+              {/* Filter Jenis */}
+              <select
+                value={snFilterJenis}
+                onChange={(e) => setSnFilterJenis(e.target.value)}
+                className="px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-500 transition-colors min-w-[130px]"
+              >
+                <option value="">Semua Jenis</option>
+                {JENIS_OPTIONS.map((j) => (
+                  <option key={j} value={j}>{j}</option>
+                ))}
+              </select>
+              {/* Filter Cabang */}
+              <select
+                value={snFilterCabang}
+                onChange={(e) => setSnFilterCabang(e.target.value)}
+                className="px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-400/30 focus:border-emerald-500 transition-colors min-w-[160px]"
+              >
+                <option value="">Semua Cabang</option>
+                {branches.map((b) => (
+                  <option key={b.id} value={b.namaCabang}>{b.namaCabang}</option>
+                ))}
+              </select>
+            </div>
+            <div className="flex items-center justify-between">
+              <p className="text-xs text-gray-500">
+                {snLoading ? "Memuat..." : `${snTotal.toLocaleString("id")} entri SN perangkat`}
+              </p>
+              <Button
+                onClick={() => {
+                  setSnForm({ sn: "", merek: "", jenis: "", lokasi: "", cabang: "" });
+                  setSnError("");
+                  setSnAddOpen(true);
+                }}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Plus className="w-4 h-4" /> Tambah SN
+              </Button>
+            </div>
+          </div>
+
+          {/* Tabel */}
+          <Card padding="none" className="overflow-hidden">
+            {snLoading ? (
+              <div className="py-16 flex justify-center items-center">
+                <Loader2 className="w-6 h-6 text-emerald-500 animate-spin" />
+              </div>
+            ) : snItems.length === 0 ? (
+              <div className="py-12 text-center text-sm text-gray-400">
+                <HardDrive className="w-10 h-10 text-gray-200 mx-auto mb-3" />
+                Tidak ada data SN perangkat ditemukan.
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <Th>Serial Number (SN)</Th>
+                      <Th>Merek</Th>
+                      <Th>Jenis</Th>
+                      <Th>Lokasi / Posisi</Th>
+                      <Th>Cabang Bank Nagari</Th>
+                      <Th className="text-right">Aksi</Th>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {snItems.map((item) => (
+                      <TableRow key={item.id} className="hover:bg-gray-50 transition-colors">
+                        <Td className="font-mono font-semibold text-gray-900 text-xs">{item.sn}</Td>
+                        <Td className="text-gray-700">{item.merek || <span className="text-gray-300 italic">—</span>}</Td>
+                        <Td>
+                          {item.jenis ? (
+                            <span className="inline-block px-2 py-0.5 text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-full">{item.jenis}</span>
+                          ) : <span className="text-gray-300 italic">—</span>}
+                        </Td>
+                        <Td className="text-xs text-gray-500 max-w-[160px] truncate" title={item.lokasi ?? ""}>{item.lokasi || <span className="text-gray-300 italic">—</span>}</Td>
+                        <Td className="font-medium text-gray-700">{item.cabang || <span className="text-gray-300 italic">—</span>}</Td>
+                        <Td className="text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="outline" size="sm"
+                              onClick={() => {
+                                setSnSelected(item);
+                                setSnForm({ sn: item.sn, merek: item.merek ?? "", jenis: item.jenis ?? "", lokasi: item.lokasi ?? "", cabang: item.cabang ?? "" });
+                                setSnError("");
+                                setSnEditOpen(true);
+                              }}
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button
+                              variant="danger" size="sm"
+                              onClick={() => { setSnSelected(item); setSnError(""); setSnDelOpen(true); }}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </div>
+                        </Td>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </Card>
+
+          {/* Pagination */}
+          {snTotalPages > 1 && (
+            <div className="flex items-center justify-between pt-1">
+              <span className="text-xs text-gray-500">
+                Halaman {snPage} / {snTotalPages}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary" size="sm"
+                  disabled={snPage <= 1 || snLoading}
+                  onClick={() => loadSnItems(snPage - 1)}
+                >
+                  <ChevronLeft className="w-4 h-4" /> Sebelumnya
+                </Button>
+                <Button
+                  variant="secondary" size="sm"
+                  disabled={snPage >= snTotalPages || snLoading}
+                  onClick={() => loadSnItems(snPage + 1)}
+                >
+                  Berikutnya <ChevronRight className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Modal Tambah Cabang */}
       <Modal open={addOpen} onClose={() => setAddOpen(false)} title="Tambah Cabang Workstation Baru">
         <form onSubmit={handleAddSubmit} className="space-y-4">
@@ -796,6 +1090,145 @@ export function MasterCabangClient({ initialBranches }: Props) {
           </Button>
         </div>
       </Modal>
+      {/* Modal Tambah SN */}
+      <Modal open={snAddOpen} onClose={() => setSnAddOpen(false)} title="Tambah SN Perangkat Baru">
+        <form onSubmit={handleSnAdd} className="space-y-4">
+          <Input
+            label="Serial Number (SN)"
+            required
+            value={snForm.sn}
+            onChange={(e) => setSnForm({ ...snForm, sn: e.target.value })}
+            placeholder="cth: MP218287"
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Merek (opsional)</label>
+            <select
+              value={snForm.merek}
+              onChange={(e) => setSnForm({ ...snForm, merek: e.target.value })}
+              className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            >
+              <option value="">— Pilih Merek —</option>
+              {masterOptions.merekKomputer.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Jenis Perangkat (opsional)</label>
+            <select
+              value={snForm.jenis}
+              onChange={(e) => setSnForm({ ...snForm, jenis: e.target.value })}
+              className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            >
+              <option value="">— Pilih Jenis —</option>
+              {JENIS_OPTIONS.map((j) => (
+                <option key={j} value={j}>{j}</option>
+              ))}
+            </select>
+          </div>
+          <Input
+            label="Lokasi / Posisi (opsional)"
+            value={snForm.lokasi}
+            onChange={(e) => setSnForm({ ...snForm, lokasi: e.target.value })}
+            placeholder="cth: Teller-01, Kantor Pusat"
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Cabang Bank Nagari (opsional)</label>
+            <select
+              value={snForm.cabang}
+              onChange={(e) => setSnForm({ ...snForm, cabang: e.target.value })}
+              className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            >
+              <option value="">— Pilih Cabang —</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.namaCabang}>{b.namaCabang}</option>
+              ))}
+            </select>
+          </div>
+          {snError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{snError}</p>}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="secondary" onClick={() => setSnAddOpen(false)} disabled={snBusy}>Batal</Button>
+            <Button type="submit" loading={snBusy} className="bg-emerald-600 hover:bg-emerald-700">Simpan SN</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Edit SN */}
+      <Modal open={snEditOpen} onClose={() => setSnEditOpen(false)} title="Ubah Data SN Perangkat">
+        <form onSubmit={handleSnEdit} className="space-y-4">
+          <Input
+            label="Serial Number (SN)"
+            required
+            value={snForm.sn}
+            onChange={(e) => setSnForm({ ...snForm, sn: e.target.value })}
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Merek (opsional)</label>
+            <select
+              value={snForm.merek}
+              onChange={(e) => setSnForm({ ...snForm, merek: e.target.value })}
+              className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            >
+              <option value="">— Pilih Merek —</option>
+              {masterOptions.merekKomputer.map((m) => (
+                <option key={m} value={m}>{m}</option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Jenis Perangkat (opsional)</label>
+            <select
+              value={snForm.jenis}
+              onChange={(e) => setSnForm({ ...snForm, jenis: e.target.value })}
+              className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            >
+              <option value="">— Pilih Jenis —</option>
+              {JENIS_OPTIONS.map((j) => (
+                <option key={j} value={j}>{j}</option>
+              ))}
+            </select>
+          </div>
+          <Input
+            label="Lokasi / Posisi (opsional)"
+            value={snForm.lokasi}
+            onChange={(e) => setSnForm({ ...snForm, lokasi: e.target.value })}
+            placeholder="cth: Teller-01"
+          />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Cabang Bank Nagari (opsional)</label>
+            <select
+              value={snForm.cabang}
+              onChange={(e) => setSnForm({ ...snForm, cabang: e.target.value })}
+              className="w-full px-3 py-2 text-sm rounded-md border border-gray-300 bg-white focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary transition-colors"
+            >
+              <option value="">— Pilih Cabang —</option>
+              {branches.map((b) => (
+                <option key={b.id} value={b.namaCabang}>{b.namaCabang}</option>
+              ))}
+            </select>
+          </div>
+          {snError && <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{snError}</p>}
+          <div className="flex justify-end gap-2 pt-2">
+            <Button type="button" variant="secondary" onClick={() => setSnEditOpen(false)} disabled={snBusy}>Batal</Button>
+            <Button type="submit" loading={snBusy}>Simpan Perubahan</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Modal Hapus SN */}
+      <Modal open={snDelOpen} onClose={() => setSnDelOpen(false)} title="Hapus SN Perangkat?" size="sm">
+        {snSelected && (
+          <p className="text-sm text-gray-600">
+            Apakah Anda yakin ingin menghapus data SN <span className="font-mono font-bold">{snSelected.sn}</span>?
+          </p>
+        )}
+        {snError && <p className="mt-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-3 py-2">{snError}</p>}
+        <div className="flex justify-end gap-2 pt-4">
+          <Button variant="secondary" onClick={() => setSnDelOpen(false)} disabled={snBusy}>Batal</Button>
+          <Button variant="danger" loading={snBusy} onClick={handleSnDelete}>Hapus</Button>
+        </div>
+      </Modal>
+
     </div>
   );
 }

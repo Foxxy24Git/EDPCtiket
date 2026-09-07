@@ -43,18 +43,18 @@ export async function GET(req: Request) {
     const filter = sp.get("filter") ?? "semua";
 
     const now = new Date();
-    let where: { waktuAkses?: { gte: Date; lte: Date } } = {};
+    let where: Record<string, unknown> = { isTerminated: false };
 
     if (filter === "harian") {
-      where = { waktuAkses: { gte: startOfDay(now), lte: endOfDay(now) } };
+      where = { isTerminated: false, waktuAkses: { gte: startOfDay(now), lte: endOfDay(now) } };
     } else if (filter === "mingguan") {
       const weekStart = startOfWeek(now);
       const weekEnd = new Date(weekStart);
       weekEnd.setDate(weekStart.getDate() + 6);
       weekEnd.setHours(23, 59, 59, 999);
-      where = { waktuAkses: { gte: weekStart, lte: weekEnd } };
+      where = { isTerminated: false, waktuAkses: { gte: weekStart, lte: weekEnd } };
     } else if (filter === "bulanan") {
-      where = { waktuAkses: { gte: startOfMonth(now), lte: endOfMonth(now) } };
+      where = { isTerminated: false, waktuAkses: { gte: startOfMonth(now), lte: endOfMonth(now) } };
     } else if (filter === "custom") {
       const startDateStr = sp.get("startDate");
       const endDateStr = sp.get("endDate");
@@ -64,7 +64,7 @@ export async function GET(req: Request) {
         const end = new Date(endDateStr);
         end.setHours(23, 59, 59, 999);
         if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
-          where = { waktuAkses: { gte: start, lte: end } };
+          where = { isTerminated: false, waktuAkses: { gte: start, lte: end } };
         }
       }
     }
@@ -328,7 +328,7 @@ export async function DELETE(req: Request) {
       update: { value: JSON.stringify(auditArr) },
     });
 
-    await prisma.serverAccessLog.delete({ where: { id } });
+    await prisma.serverAccessLog.update({ where: { id }, data: { isTerminated: true } });
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[DELETE /api/server-log]", err);

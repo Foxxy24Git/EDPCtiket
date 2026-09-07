@@ -24,7 +24,7 @@ export async function GET(req: Request) {
   const toStr = sp.get("to");
   const search = sp.get("search")?.trim() ?? "";
 
-  const where: Record<string, unknown> = {};
+  const where: Record<string, unknown> = { isTerminated: false };
 
   if (fromStr || toStr) {
     const createdAt: Record<string, Date> = {};

@@ -151,7 +151,7 @@ export async function DELETE(_req: Request, { params }: Params) {
       update: { value: JSON.stringify(auditArr) },
     });
 
-    await prisma.ticket.delete({ where: { id } });
+    await prisma.ticket.update({ where: { id }, data: { isTerminated: true } });
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === "P2025") {

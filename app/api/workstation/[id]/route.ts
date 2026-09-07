@@ -74,7 +74,10 @@ export async function DELETE(_req: Request, { params }: Params) {
   const { id } = await params;
 
   try {
-    await prisma.workstationMaster.delete({ where: { id } });
+    await prisma.workstationMaster.update({
+      where: { id },
+      data: { isTerminated: true },
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     if (

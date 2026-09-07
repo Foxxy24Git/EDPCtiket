@@ -14,6 +14,7 @@ export async function GET() {
       where: {
         catatanOleh: session.sub,
         waktuKeluar: null,
+        isTerminated: false,
       },
     });
 

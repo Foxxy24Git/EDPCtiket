@@ -11,6 +11,7 @@ if [ -n "$DATABASE_URL" ]; then
   echo "==> Running Prisma Database Seed..."
   echo "=========================================="
   npx prisma db seed || true
+  node prisma/seed-pc-inventory.js || true
 fi
 
 echo "=========================================="

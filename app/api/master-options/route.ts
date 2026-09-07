@@ -7,7 +7,7 @@ import path from "path";
 const DATA_FILE = path.join(process.cwd(), "data", "master_options.json");
 
 const DEFAULT_OPTIONS = {
-  merekKomputer: ["Lenovo", "HP", "Dell", "Acer", "Asus", "Apple", "Fujitsu"],
+  merekKomputer: ["Lenovo", "HP", "Dell", "Acer", "Asus", "MSI", "Sony", "Apple", "Fujitsu", "Biostar", "ECS", "Intel"],
   merekEdc: ["Ingenico", "Verifone", "Pax", "Sunmi", "MoreFun", "Castle"],
   vendorList: ["PT Infomedia", "Vendor Lenovo", "PT Multipolar", "Vendor HP", "PT Visionet"],
   deviceTypes: [
